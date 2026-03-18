@@ -1,13 +1,13 @@
 services:
   postgres:
     image: postgres:18
-    container_name: postgresTodoDb
+    container_name: postgresMechWorkshop
     ports:
       - "5455:5432"
     environment:
-      POSTGRES_USER: leo
-      POSTGRES_PASSWORD: leo123
-      POSTGRES_DB: tododb
+      POSTGRES_USER: workshop
+      POSTGRES_PASSWORD: workshop123
+      POSTGRES_DB: workshopDB
     volumes:
       - postgres_data:/var/lib/postgresql
 

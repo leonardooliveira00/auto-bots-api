@@ -1,13 +1,11 @@
 import express from "express";
 import userRoutes from "./routes/user-route";
-import taskRoutes from "./routes/task-route";
 import authRoute from "./routes/auth-route";
 import errorMiddleware from "./middlewares/error-middleware";
 const app = express();
 
 app.use(express.json());
-app.use("/users", userRoutes);
-app.use("/tasks", taskRoutes);
+app.use("/user", userRoutes);
 app.use("/auth", authRoute);
 app.use(errorMiddleware);
 

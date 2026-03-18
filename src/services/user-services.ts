@@ -4,9 +4,15 @@ import { User } from "../generated/prisma/client";
 import { AppError } from "../errors/app-error";
 import { HTTP_STATUS } from "../errors/http-status";
 
+import { CreateUserDto } from "../interfaces/CreateUserDto";
+
 import { hashPassword } from "../utils/hash-password";
+import { hmacCpf } from "../utils/encryption/hmac-encryption";
+import { argon2Cpf } from "../utils/encryption/argon2-encryption";
+import { encryptCpf } from "../utils/encryption/aes-encryption";
 
 export const UserService = {
+  /*
   async getAll() {
     return prisma.user.findMany({
       select: {
@@ -32,36 +38,52 @@ export const UserService = {
 
     return user;
   },
+*/
+  async createUser(user: CreateUserDto) {
+    const standardizedEmail = user.email.toLowerCase().trim();
 
-  async create(data: { name: string; email: string; password: string }) {
-    const standardizedEmail = data.email.toLowerCase().trim();
+    const passwordHash = await hashPassword(user.password);
 
-    const userAlreadyExists = await prisma.user.findUnique({
-      where: { email: standardizedEmail },
-    });
+    const cpfHmac = hmacCpf(user.cpf);
+    const cpfArgon2 = await argon2Cpf(cpfHmac);
+    const cpfEncrypted = encryptCpf(cpfHmac);
 
-    if (userAlreadyExists)
-      throw new AppError("Email já cadastrado.", HTTP_STATUS.CONFLICT);
+    const { address, cpf, password, ...userData } = user;
 
-    const hashedPassword = await hashPassword(data.password);
-
-    const user = await prisma.user.create({
+    return prisma.user.create({
       data: {
-        name: data.name,
+        ...userData,
         email: standardizedEmail,
-        password: hashedPassword,
+        passwordHash,
+        cpfHash: cpfArgon2,
+        cpfEncrypted,
+        address: {
+          create: { ...address },
+        },
       },
       select: {
         id: true,
         name: true,
+        lastname: true,
         email: true,
+        phoneNumber: true,
+        createdAt: true,
+        updatedAt: true,
+        address: {
+          select: {
+            street: true,
+            number: true,
+            complement: true,
+            postalCode: true,
+            city: true,
+            state: true,
+          },
+        },
       },
     });
-
-    return user;
   },
-
-  async update(id: number, data: Partial<Omit<User, "id">>) {
+  /*
+  async update(id: number, user: Partial<Omit<User, "id">>) {
     const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user)
@@ -93,4 +115,5 @@ export const UserService = {
 
     return deletedUser;
   },
+  */
 };

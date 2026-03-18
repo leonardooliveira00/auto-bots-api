@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user-services";
 
-import { createUserSchema } from "../validations/user-schema";
+import { createUserSchema } from "../validators/user-schema";
 
 export const UserController = {
+  /*
   async getUsers(req: Request, res: Response) {
     const users = await UserService.getAll();
     res.status(200).json(users);
@@ -18,14 +19,15 @@ export const UserController = {
     const user = await UserService.getById(id);
     res.status(200).json(user);
   },
-
+*/
   async createUser(req: Request, res: Response) {
-    const validatedData = createUserSchema.parse(req.body);
+    const validateUser = createUserSchema.parse(req.body);
 
-    const user = await UserService.create(validatedData);
+    const user = await UserService.createUser(validateUser);
     res.status(201).json(user);
   },
 
+  /*
   async updateUser(req: Request, res: Response) {
     const id = Number(req.params.id);
     const data = req.body;
@@ -39,4 +41,5 @@ export const UserController = {
     await UserService.delete(id);
     res.status(204).send();
   },
+  */
 };
