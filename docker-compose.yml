@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgresTodoDb
+    ports:
+      - "5455:5432"
+    environment:
+      POSTGRES_USER: leo
+      POSTGRES_PASSWORD: leo123
+      POSTGRES_DB: tododb
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
