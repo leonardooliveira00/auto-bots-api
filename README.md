@@ -107,7 +107,16 @@ npx prisma generate
 
 ---
 
-## 🔐 Detalhes da Implementação de Segurança
+## 🔒 Autenticação e Segurança
+
+A API utiliza uma arquitetura de segurança em camadas, priorizando a proteção de dados sensíveis e a prevenção contra ataques comuns da Web (XSS e CSRF).
+
+🔑 Autenticação
+JWT (JSON Web Token): Implementado via @nestjs/jwt com payload padronizado (sub, email).
+
+Argon2: Utilizado para o hashing de senhas, seguindo as recomendações atuais da OWASP para resistência a ataques de força bruta.
+
+Estratégia de Armazenamento: O token de acesso não é retornado no corpo da resposta. Ele é enviado ao cliente através de um Cookie httpOnly, impedindo o acesso via JavaScript e mitigando ataques de XSS (Cross-Site Scripting).
 
 O fluxo de descriptografia no método `findAll` segue um padrão de **Data Transformation**:
 
@@ -120,8 +129,8 @@ O fluxo de descriptografia no método `findAll` segue um padrão de **Data Trans
 
 ## 📝 Roadmap de Desenvolvimento
 
-- [ ] Validação de duplicidade.
-- [ ] Implementação de Autenticação via JWT.
+- [✅] Validação de duplicidade.
+- [✅] Implementação de Autenticação via JWT.
 - [ ] Criação de mais entidades do banco de dados
 
 ---
