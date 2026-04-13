@@ -17,13 +17,13 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Address" (
     "address_id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
     "street" TEXT NOT NULL,
     "number" TEXT NOT NULL,
     "complement" TEXT,
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
     "postalCode" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("address_id")
 );

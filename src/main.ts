@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { jwtConstants } from './auth/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,7 +16,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use(cookieParser());
+  app.use(cookieParser(jwtConstants.secret));
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -13,6 +13,7 @@ import {
   cpfEncryption,
   cpfDecryption,
 } from '../../utils/encryption/cpf.encryption';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -92,25 +93,10 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { user_id: id },
-      select: {
-        user_id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phoneNumber: true,
-        cpfEncrypted: true,
-        address: true,
-      },
+      include: { address: true },
     });
 
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
-    const decryptedCpf = cpfDecryption(user.cpfEncrypted);
-    const { cpfEncrypted, ...safeUser } = user;
-
-    return {
-      ...safeUser,
-      cpf: decryptedCpf,
-    };
+    return new UserEntity(user as any);
   }
 
   async findByEmail(email: string) {
