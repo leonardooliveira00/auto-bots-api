@@ -61,13 +61,17 @@ Use o resultado tanto para:
 
 - CPF_KEY_AES
 - CPF_KEY_HMAC
+- JWT_SECRET
 
 4.  **Configure as variáveis de ambiente:**
     Crie um arquivo `.env` na raiz do projeto com as seguintes chaves:
 
     ```env
     DATABASE_URL="postgresql://user:password@localhost:5432/autobots?schema=public"
-    ENCRYPTION_KEY="sua_chave_de_32_bytes_aqui" # Deve ser exatamente 32 caracteres
+    CPF_HMAC_KEY="chave_32_bytes"
+    CPF_AES_KEY="chave_32_bytes"
+    JWT_SECRET="chave_32_bytes"
+    REDIS_URL=redis://localhost:6379
     ```
 
 5.  **Configurando o banco de dados:**
@@ -109,6 +113,7 @@ npx prisma generate
 | **POST**   | `/auth/login`   | Realiza a autênticação de um usuário já cadastrado.            |
 | **POST**   | `/auth/profile` | Retorna os dados do usuário autenticado.                       |
 | **GET**    | `/refresh`      | Gera um novo token válido.                                     |
+| **POST**   | `/logout`       | Encerra a sessão do usuário.                                   |
 
 ---
 

@@ -2,13 +2,14 @@ import { Exclude, Expose, Type } from 'class-transformer';
 import { AddressEntity } from './address.entity';
 import { cpfDecryption } from '../../../utils/encryption/cpf.encryption';
 import { maskCpf } from '../../../utils/mask.cpf';
+import { ValidateNested } from 'class-validator';
 
 export class UserEntity {
-  user_id!: number;
-  name!: string;
-  lastname!: string;
-  email!: string;
-  phoneNumber!: string;
+  @Expose() user_id!: number;
+  @Expose() name!: string;
+  @Expose() lastname!: string;
+  @Expose() email!: string;
+  @Expose() phoneNumber!: string;
 
   @Exclude()
   cpfHash!: string;
@@ -24,6 +25,7 @@ export class UserEntity {
     return this.cpfEncrypted ? maskCpf(cpfDecryption(this.cpfEncrypted)) : '';
   }
 
+  @ValidateNested()
   @Type(() => AddressEntity)
   address!: AddressEntity | null;
 

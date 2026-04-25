@@ -9,10 +9,7 @@ import { PrismaService } from '../../prisma.service';
 
 import { generatePasswordHash } from '../../utils/encryption/hash.password';
 import { generateCpfHash } from '../../utils/encryption/hash.cpf';
-import {
-  cpfEncryption,
-  cpfDecryption,
-} from '../../utils/encryption/cpf.encryption';
+import { cpfEncryption } from '../../utils/encryption/cpf.encryption';
 import { UserEntity } from './entities/user.entity';
 
 @Injectable()
@@ -21,22 +18,22 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const passwordHash = await generatePasswordHash(createUserDto.password);
+    const cpfHash = generateCpfHash(createUserDto.cpf);
 
     const userArleadyExists = await this.prisma.user.findFirst({
       where: {
-        OR: [{ email: createUserDto.email }, { cpfHash: createUserDto.cpf }],
+        OR: [{ email: createUserDto.email }, { cpfHash: cpfHash }],
       },
     });
-
-    const cpfHash = generateCpfHash(createUserDto.cpf);
-    const cpfEncrypted = cpfEncryption(createUserDto.cpf);
 
     if (userArleadyExists)
       throw new ConflictException('Email ou CPF já cadastrados.');
 
+    const cpfEncrypted = cpfEncryption(createUserDto.cpf);
+
     const { address, cpf, password, ...userData } = createUserDto;
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...userData,
         passwordHash,
@@ -46,47 +43,18 @@ export class UsersService {
           create: { ...address },
         },
       },
-      select: {
-        user_id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phoneNumber: true,
-        address: {
-          select: {
-            street: true,
-            number: true,
-            complement: true,
-            postalCode: true,
-            city: true,
-            state: true,
-          },
-        },
-      },
     });
+
+    return new UserEntity(user);
   }
 
   async findAll() {
     const users = await this.prisma.user.findMany({
-      select: {
-        user_id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phoneNumber: true,
-        cpfEncrypted: true,
-        address: true,
-      },
+      include: { address: true },
     });
 
     return users.map((user) => {
-      const decryptedCpf = cpfDecryption(user.cpfEncrypted);
-      const { cpfEncrypted, ...safeUser } = user;
-
-      return {
-        ...safeUser,
-        cpf: decryptedCpf,
-      };
+      return new UserEntity(user);
     });
   }
 
@@ -100,15 +68,14 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email },
-      select: {
-        user_id: true,
-        email: true,
-        passwordHash: true,
-        name: true,
-      },
+      include: { address: true },
     });
+
+    if (!user) throw new NotFoundException('Usuário não encontrado.');
+
+    return new UserEntity(user);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -130,26 +97,10 @@ export class UsersService {
           },
         }),
       },
-      select: {
-        user_id: true,
-        name: true,
-        lastname: true,
-        email: true,
-        phoneNumber: true,
-        address: {
-          select: {
-            street: true,
-            number: true,
-            complement: true,
-            postalCode: true,
-            state: true,
-            city: true,
-          },
-        },
-      },
+      include: { address: true },
     });
 
-    return updatedUser;
+    return new UserEntity(updatedUser);
   }
 
   async remove(id: number) {
