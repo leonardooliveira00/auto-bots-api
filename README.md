@@ -99,11 +99,16 @@ npx prisma generate
 
 ## 🛣️ Fluxo de Endpoints (V1)
 
-| Método   | Rota         | Descrição                                                      |
-| :------- | :----------- | :------------------------------------------------------------- |
-| **POST** | `/users`     | Cadastra funcionário e endereço (Criptografia GCM automática). |
-| **GET**  | `/users`     | Lista funcionários com CPF descriptografado (Visão Admin).     |
-| **GET**  | `/users/:id` | Retorna os detalhes de um funcionário específico.              |
+| Método     | Rota            | Descrição                                                      |
+| :--------- | :-------------- | :------------------------------------------------------------- |
+| **POST**   | `/users`        | Cadastra funcionário e endereço (Criptografia GCM automática). |
+| **GET**    | `/users`        | Lista funcionários com CPF descriptografado (Visão Admin).     |
+| **GET**    | `/users/:id`    | Retorna os detalhes de um funcionário específico.              |
+| **PATCH**  | `/users/:id`    | Atualiza os dados de um usuário específico.                    |
+| **DELETE** | `/users/:id`    | Deleta o usuário do banco de dados.                            |
+| **POST**   | `/auth/login`   | Realiza a autênticação de um usuário já cadastrado.            |
+| **POST**   | `/auth/profile` | Retorna os dados do usuário autenticado.                       |
+| **GET**    | `/refresh`      | Gera um novo token válido.                                     |
 
 ---
 
