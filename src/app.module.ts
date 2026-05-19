@@ -5,8 +5,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from '../prisma.module';
 import { AuthModule } from './auth/auth.module';
-import { minutes, ThrottlerModule } from '@nestjs/throttler';
-import { REDIS_CLIENT } from './common/redis/redis.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { CachingModule } from './common/cache/cache.module';
 import { SessionModule } from './sessions/session.module';
@@ -24,16 +23,19 @@ import { SessionModule } from './sessions/session.module';
 
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (redisClient: any) => ({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
         throttlers: [
           {
-            ttl: minutes(10),
-            limit: 15,
+            ttl: Number(config.getOrThrow('THROTTLE_TTL')),
+            limit: Number(config.getOrThrow('THROTTLE_LIMIT')),
           },
         ],
-        storage: new ThrottlerStorageRedisService(redisClient),
+        storage: new ThrottlerStorageRedisService(
+          config.getOrThrow('REDIS_URL'),
+          { keyPrefix: 'throttler:' },
+        ),
       }),
-      inject: [ConfigService, REDIS_CLIENT],
     }),
   ],
   controllers: [AppController],
