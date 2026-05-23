@@ -65,7 +65,7 @@ export class UsersService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const cachedData = await this.cacheService.getCache<UserEntity>(
       `user:${id}`,
     );
@@ -99,7 +99,7 @@ export class UsersService {
     return new UserEntity(user);
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { user_id: id },
     });
@@ -126,7 +126,7 @@ export class UsersService {
     return new UserEntity(updatedUser);
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { user_id: id },
     });

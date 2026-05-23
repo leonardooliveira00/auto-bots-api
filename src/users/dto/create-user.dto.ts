@@ -13,13 +13,15 @@ import { CreateAddressDto } from './create-address.dto';
 
 export class CreateUserDto {
   @IsString()
-  @IsNotEmpty()
+  @MaxLength(50)
   @MinLength(2)
+  @IsNotEmpty()
   name!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @MaxLength(50)
   @MinLength(2)
+  @IsNotEmpty()
   lastname!: string;
 
   @IsEmail()
@@ -30,6 +32,7 @@ export class CreateUserDto {
   email!: string;
 
   @IsMobilePhone('pt-BR')
+  @MaxLength(11)
   @IsNotEmpty()
   phoneNumber!: string;
 
@@ -44,8 +47,8 @@ export class CreateUserDto {
   password!: string;
 
   @IsString()
-  @IsNotEmpty()
   @MaxLength(11)
+  @IsNotEmpty()
   @Transform(({ value }) =>
     typeof value === 'string' ? value.replace(/\D/g, '') : value,
   )

@@ -5,11 +5,15 @@ import { maskCpf } from '../../../utils/masks/mask.cpf';
 import { ValidateNested } from 'class-validator';
 
 export class UserEntity {
-  @Expose() user_id!: number;
+  @Expose() user_id!: string;
   @Expose() name!: string;
   @Expose() lastname!: string;
   @Expose() email!: string;
   @Expose() phoneNumber!: string;
+  @Expose()
+  get cpf(): string {
+    return this.cpfEncrypted ? maskCpf(cpfDecryption(this.cpfEncrypted)) : '';
+  }
 
   @Exclude()
   cpfHash!: string;
@@ -19,11 +23,6 @@ export class UserEntity {
 
   @Exclude()
   passwordHash!: string;
-
-  @Expose()
-  get cpf(): string {
-    return this.cpfEncrypted ? maskCpf(cpfDecryption(this.cpfEncrypted)) : '';
-  }
 
   @ValidateNested()
   @Type(() => AddressEntity)

@@ -55,7 +55,7 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(userId: number, providedToken: string) {
+  async refreshTokens(userId: string, providedToken: string) {
     const storedToken = await this.sessionService.getSession(userId);
 
     if (!storedToken)
@@ -97,7 +97,7 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number) {
+  async logout(userId: string) {
     await this.sessionService.deleteSession(userId);
   }
 }
