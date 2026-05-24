@@ -4,7 +4,7 @@ import { cpfDecryption } from '../../../utils/encryption/cpf.encryption';
 import { maskCpf } from '../../../utils/masks/mask.cpf';
 import { ValidateNested } from 'class-validator';
 
-export class UserEntity {
+export class User {
   @Expose() user_id!: string;
   @Expose() name!: string;
   @Expose() lastname!: string;
@@ -28,7 +28,7 @@ export class UserEntity {
   @Type(() => AddressEntity)
   address!: AddressEntity | null;
 
-  constructor(partial: Partial<UserEntity>) {
+  constructor(partial: Partial<User>) {
     Object.assign(this, partial);
   }
 }

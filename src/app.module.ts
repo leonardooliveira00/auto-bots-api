@@ -9,6 +9,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { CachingModule } from './common/cache/cache.module';
 import { SessionModule } from './sessions/session.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -37,6 +38,8 @@ import { SessionModule } from './sessions/session.module';
         ),
       }),
     }),
+
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
