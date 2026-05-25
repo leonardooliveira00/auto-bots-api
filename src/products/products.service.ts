@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,7 +7,6 @@ import {
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../../prisma.service';
-import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
@@ -22,16 +22,34 @@ export class ProductsService {
         `Produto com o SKU ${createProductDto.sku} já existe.`,
       );
 
+    const {
+      sku,
+      name,
+      description,
+      price,
+      quantity,
+      minStock,
+      maxStock = 999,
+    } = createProductDto;
+
+    if (minStock > maxStock)
+      throw new BadRequestException(
+        `O estoque mínimo (${minStock}) não pode ser maior que o estoque máximo (${maxStock}).`,
+      );
+
     return await this.prisma.$transaction(async (tx) => {
       return tx.product.create({
         data: {
-          sku: createProductDto.sku,
-          name: createProductDto.name,
-          description: createProductDto.description,
-          price: createProductDto.price,
+          sku,
+          name,
+          description,
+          price,
           stock: {
-            create: { quantity: 0, minQuantity: 0, maxStock: 0 },
+            create: { quantity, minStock, maxStock },
           },
+        },
+        include: {
+          stock: true,
         },
       });
     });

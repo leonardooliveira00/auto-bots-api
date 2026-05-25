@@ -67,7 +67,7 @@ model Stock {
   stock_id String @id @default(uuid()) @db.Uuid
   productId String @unique @map("product_id") @db.Uuid
   quantity Int @default(0)
-  minQuantity Int @default(0) @map("min_stock")
+  minStock Int @default(0) @map("min_stock")
   maxStock Int @map("max_stock")
   updatedAt DateTime @updatedAt @map("updated_at")
 
