@@ -1,6 +1,6 @@
 export class AddressEntity {
-  address_id!: number;
-  userId!: number;
+  address_id!: string;
+  userId!: string;
   street!: string;
   number!: string;
   complement?: string | null;

@@ -10,7 +10,7 @@ import { PrismaService } from '../../prisma.service';
 import { generatePasswordHash } from '../../utils/encryption/hash.password';
 import { generateCpfHash } from '../../utils/encryption/hash.cpf';
 import { cpfEncryption } from '../../utils/encryption/cpf.encryption';
-import { UserEntity } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { CacheService } from '../common/cache/cache.service';
 import { instanceToPlain } from 'class-transformer';
 import { SessionService } from '../sessions/session.service';
@@ -40,7 +40,7 @@ export class UsersService {
 
     const { address, cpf, password, ...userData } = createUserDto;
 
-    const user = await this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         ...userData,
         passwordHash,
@@ -50,26 +50,16 @@ export class UsersService {
           create: { ...address },
         },
       },
+      include: { address: true },
     });
-
-    return new UserEntity(user);
   }
 
   async findAll() {
-    const users = await this.prisma.user.findMany({
-      include: { address: true },
-    });
-
-    return users.map((user) => {
-      return new UserEntity(user);
-    });
+    return await this.prisma.user.findMany({ include: { address: true } });
   }
 
-  async findOne(id: number) {
-    const cachedData = await this.cacheService.getCache<UserEntity>(
-      `user:${id}`,
-    );
-
+  async findOne(id: string) {
+    const cachedData = await this.cacheService.getCache<any>(`user:${id}`);
     if (cachedData) return cachedData;
 
     const user = await this.prisma.user.findUnique({
@@ -79,13 +69,9 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado.');
 
-    const userEntity = new UserEntity(user as any);
+    await this.cacheService.storeCache(`user:${id}`, user);
 
-    const plainData = instanceToPlain(userEntity);
-
-    await this.cacheService.storeCache(`user:${id}`, plainData);
-
-    return userEntity;
+    return user;
   }
 
   async findByEmail(email: string) {
@@ -96,10 +82,10 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado.');
 
-    return new UserEntity(user);
+    return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { user_id: id },
     });
@@ -123,10 +109,10 @@ export class UsersService {
 
     await this.cacheService.clearCache(`user:${id}`);
 
-    return new UserEntity(updatedUser);
+    return updatedUser;
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { user_id: id },
     });
@@ -138,9 +124,8 @@ export class UsersService {
     });
 
     await this.sessionService.deleteSession(id);
-
     await this.cacheService.clearCache(`user:${id}`);
 
-    return { message: 'Usuário removido com sucesso.' };
+    return { message: `Usuário ${user.name} removido com sucesso.` };
   }
 }

@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
 import { UseAuth } from './auth.decorator';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { RefreshTokenGuard } from './refresh.token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -55,7 +56,7 @@ export class AuthController {
     return { message: 'Login realizado com sucesso!', refresh_token };
   }
 
-  @UseAuth()
+  @UseGuards(ThrottlerGuard, RefreshTokenGuard)
   @Post('refresh')
   async refresh(
     @Request() req,

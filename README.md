@@ -1,147 +1,145 @@
 # 🛡️ AutoBots API - Sistema de Gestão de Oficina Mecânica
 
-Esta é uma API robusta desenvolvida com **NestJS** e **Prisma ORM**, focada em escalabilidade, segurança de dados sensíveis e arquitetura desacoplada. O sistema foi projetado para gerenciar funcionários e clientes de uma oficína mecânica, garantindo total conformidade com boas práticas de engenharia de software e segurança (LGPD).
+# 🏛️ Arquitetura e Camadas da Aplicação
+
+O ecossistema backend do **Auto-Bots** foi desenvolvido sob a arquitetura modular do **NestJS**, seguindo os princípios do SOLID e o padrão de injeção de dependências. A aplicação adota uma divisão clara de responsabilidades em camadas independentes, o que facilita a testabilidade, o desacoplamento e a manutenção do código.
 
 ---
 
-## 🚀 Tecnologias e Ferramentas
+## 🛠️ Stack Tecnológica e Padrões Clave
 
-- **Framework:** [NestJS](https://nestjs.com/) (Node.js)
-- **ORM:** [Prisma](https://www.prisma.io/)
-- **Banco de Dados:** PostgreSQL
-- **Linguagem:** TypeScript
-- **Criptografia:** Crypto (AES-256-GCM)
-- **Segurança de Credenciais:** Argon2 para senhas e HMAC para Hashing de busca.
-
----
-
-## 🏗️ Arquitetura e Diferenciais Técnicos
-
-O projeto utiliza uma arquitetura modular, onde cada recurso possui seu próprio módulo, controller e service, facilitando a manutenção e testes.
-
-### 1. Modelagem Relacional (1:1)
-
-Implementamos uma relação estrita de um para um entre as entidades `User` (Funcionário) e `Address` (Endereço).
-
-- A tabela `Address` contém a chave estrangeira `userId`, garantindo que cada funcionário tenha um endereço único e facilitando a integridade referencial.
-- Uso de **Nested Writes** do Prisma para criação atômica de Usuário + Endereço em uma única transação.
-
-### 2. Segurança Avançada de Dados (LGPD Ready)
-
-Diferente de implementações básicas, este projeto utiliza **Criptografia Autenticada** para dados sensíveis (CPF):
-
-- **AES-256-GCM:** Cada CPF é criptografado gerando um **IV (Vetor de Inicialização)** e uma **Auth Tag** exclusivos. Isso garante que, mesmo que o banco de dados seja exposto, os dados permaneçam ilegíveis e qualquer tentativa de alteração seja detectada pelo algoritmo.
-- **Blind Indexing (CPF Hash):** Criamos um hash determinístico (HMAC) do CPF. Isso permite realizar buscas únicas e rápidas no banco de dados (`findUnique`) sem a necessidade de descriptografar todos os registros.
+- **[NestJS (v10+)](https://nestjs.com/):** Framework Node.js progressivo baseado em TypeScript, escolhido pela sua estrutura opinativa que força uma arquitetura limpa e escalável de nível empresarial.
+- **[PostgreSQL](https://www.postgresql.org/):** Banco de dados relacional robusto, ideal para manter a consistência e a integridade dos dados corporativos através de relacionamentos bem definidos.
+- **[Prisma ORM](https://www.prisma.io/):** Ferramenta de mapeamento objeto-relacional moderna que acelera o desenvolvimento com migrações automáticas e tipagem estática ponta a ponta.
+- **[Redis](https://redis.io/):** Banco de dados em memória de ultraperformance, utilizado de forma assíncrona como camada de cache global, além de atuar no controle rigoroso de sessões (Refresh Token Rotation) e Rate Limiting.
+- **Padrão Repository:** Padrão arquitetural implementado para desacoplar a lógica de persistência dos serviços, garantindo que a lógica de negócio permaneça agnóstica a ferramentas de banco de dados.
 
 ---
 
-## 🔧 Como Executar o Projeto
+## 🌐 Ambientes e Documentação
 
-1.  **Clone o repositório:**
+- **🚀 API em Produção (Deploy):** [https://auto-bots-api-production-e878.up.railway.app](https://auto-bots-api-production-e878.up.railway.app)
+- **📖 Documentação Swagger (Ambiente Local):** `http://localhost:3000/api/`
+- **📬 Documentação Swagger (Produção):** [https://auto-bots-api-production-e878.up.railway.app/api](https://auto-bots-api-production-e878.up.railway.app/api)
 
-    ```bash
-    git clone (https://github.com/leonardooliveira00/auto-bots-api.git)
-    cd auto-bots-api
-    ```
+---
 
-2.  **Instale as dependências:**
+## 🧩 Visão Geral das Camadas
 
-    ```bash
-    npm i
-    ```
+Cada módulo funcional da aplicação (ex: `User`, `Auth`) é estruturado internamente em três camadas principais:
 
-3.  **Gerando as chaves:**
-    No terminal:
+### 1. Camada de Apresentação (Controllers & Gateways)
+
+É a porta de entrada da aplicação, responsável por expor a API RESTful e gerenciar o protocolo HTTP.
+
+- **Validação de Entrada:** Utiliza `ValidationPipe` junto com as bibliotecas `class-validator` e `class-mapper` para garantir que os dados recebidos (DTOs) estejam estritamente no formato esperado antes de tocar a lógica de negócio.
+- **Segurança e Guardas:** É nesta camada que os `Guards` globais e específicos atuam. O `AccessToken Guard` intercepta as requisições para validar a autenticidade do JWT e se comunicar com o Redis para checar o status da sessão.
+
+### 2. Camada de Lógica de Negócio (Services & Use Cases)
+
+O coração da aplicação. Esta camada é completamente agnóstica em relação a rotas HTTP ou protocolos de transporte.
+
+- **Regras de Negócio:** Centraliza as validações de fluxo, permissões corporativas e gerenciamento de estados.
+- **Orquestração de Segurança:** Intermedeia a chamada para os módulos de criptografia antes de enviar os dados para persistência, garantindo que informações sensíveis sejam tratadas de forma isolada.
+- **Integração de Cache:** Interage diretamente com o `CacheService` para gerenciar a leitura e escrita estratégica no Redis.
+
+### 3. Camada de Acesso a Dados (Prisma Repositories & Entities)
+
+Camada responsável pela comunicação com o banco de dados relacional e pela representação das tabelas em objetos de código.
+
+- **Prisma ORM:** Abstrai as queries SQL de forma tipada e segura (Type-safe), garantindo integridade nas transações com o PostgreSQL.
+- **Entidades e Sanitização:** Utiliza os decorators do `class-transformer` para aplicar lógica de infraestrutura diretamente nas entidades. É aqui que acontece o mascaramento automático de dados na saída da API (ex: ocultar caracteres de documentos) e a conversão de tipos.
+
+---
+
+### 4. Camadas Transversais e Complementares
+
+Para dar suporte às camadas principais sem gerar acoplamento ou duplicação de código, a aplicação utiliza estruturas globais de compartilhamento:
+
+- **Pasta `common/` (Infraestrutura Compartilhada):** Funciona como o núcleo de configuração global da aplicação. Abriga as inicializações de módulos de infraestrutura que servem a múltiplos domínios, como as diretrizes do módulo do Redis, políticas globais de Caching assíncrono e interceptores de comportamento do framework.
+- **Pasta `utils/` (Utilitários Globais e Helpers):** Camada puramente funcional e isolada, responsável por abrigar funções utilitárias puras e agnósticas a regras de negócio. É aqui que residem os motores matemáticos e criptográficos do sistema, como os algoritmos de criptografia (AES-256-GCM), geradores de hash (SHA-256) e as funções de mascaramento estrito de caracteres para dados sensíveis.
+
+> 💡 **Nota sobre Módulos de Domínio:** Módulos como `auth`, `users` e `sessions` (responsável pelo ciclo de vida e rotação de tokens das sessões de usuário) são tratados como módulos de domínio principais da aplicação, consumindo as ferramentas das pastas `common` e `utils` para garantir sua execução segura.
+
+---
+
+## 🚀 Como Executar o Projeto
+
+Siga o passo a passo abaixo para rodar a aplicação localmente em seu ambiente de desenvolvimento.
+
+### Pré-requisitos
+
+Antes de começar, você precisará ter instalado em sua máquina:
+
+- [Node.js](https://nodejs.org/) (v18 ou superior)
+- [Docker](https://www.docker.com/) e Docker Compose
+
+### Passos para Execução
+
+1. **Clonar o Repositório e Instalar Dependências:**
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   git clone [https://github.com/leonardooliveira00/auto-bots-api.git](https://github.com/leonardooliveira00/auto-bots-api.git)
+   cd auto-bots
+   npm install
 ```
 
-Use o resultado tanto para:
+2. **Configurar Variáveis de Ambiente:**
 
-- CPF_KEY_AES
-- CPF_KEY_HMAC
-- JWT_SECRET
-
-4.  **Configure as variáveis de ambiente:**
-    Crie um arquivo `.env` na raiz do projeto com as seguintes chaves:
-
-    ```env
-    DATABASE_URL="postgresql://user:password@localhost:5432/autobots?schema=public"
-    CPF_HMAC_KEY="chave_32_bytes"
-    CPF_AES_KEY="chave_32_bytes"
-    JWT_SECRET="chave_32_bytes"
-    REDIS_URL=redis://localhost:6379
-    ```
-
-5.  **Configurando o banco de dados:**
-
-## 🐳 Como Rodar com Docker (https://docs.docker.com/desktop/setup/install/windows-install/)
-
-Para facilitar o setup do banco de dados, o projeto conta com suporte ao Docker Compose.
-
-**Inicie o banco de dados:**
+Crie um arquivo .env na raiz do projeto baseado no .env.example e preencha as credenciais (Portas, chaves de criptografia AES-256, secrets do JWT e strings de conexão):
 
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
 
+---
+
+3. **Subir a Infraestrutura (PostgreSQL & Redis):**
+
+Utilize o Docker Compose para isolar e rodar os serviços de banco de dados e cache em segundo plano:
+
 ```bash
-npx prisma migrate dev
+docker compose up -d
 ```
+
+---
+
+4. **Rodar as Migrations do Banco de Dados:**
+
+Com o banco de dados online, execute as migrações do Prisma para estruturar as tabelas e gerar o Prisma Client tipado:
 
 ```bash
 npx prisma generate
+npx prisma migrate dev
 ```
 
-6.  **Inicie o servidor:**
-    ```bash
-    npm run start:dev
-    ```
+---
+
+5. **Iniciar o Servidor de Desenvolvimento:**
+
+Agora, inicialize o servidor de desenvolvimento do NestJS. A API estará pronta para receber requisições:
+
+```bash
+npm run start:dev
+```
+
+A aplicação estará disponível por padrão em `http://localhost:3000`.
 
 ---
 
 ## 🛣️ Fluxo de Endpoints (V1)
 
-| Método     | Rota            | Descrição                                                      |
-| :--------- | :-------------- | :------------------------------------------------------------- |
-| **POST**   | `/users`        | Cadastra funcionário e endereço (Criptografia GCM automática). |
-| **GET**    | `/users`        | Lista funcionários com CPF descriptografado (Visão Admin).     |
-| **GET**    | `/users/:id`    | Retorna os detalhes de um funcionário específico.              |
-| **PATCH**  | `/users/:id`    | Atualiza os dados de um usuário específico.                    |
-| **DELETE** | `/users/:id`    | Deleta o usuário do banco de dados.                            |
-| **POST**   | `/auth/login`   | Realiza a autênticação de um usuário já cadastrado.            |
-| **POST**   | `/auth/profile` | Retorna os dados do usuário autenticado.                       |
-| **GET**    | `/refresh`      | Gera um novo token válido.                                     |
-| **POST**   | `/logout`       | Encerra a sessão do usuário.                                   |
-
----
-
-## 🔒 Autenticação e Segurança
-
-A API utiliza uma arquitetura de segurança em camadas, priorizando a proteção de dados sensíveis e a prevenção contra ataques comuns da Web (XSS e CSRF).
-
-🔑 Autenticação
-JWT (JSON Web Token): Implementado via @nestjs/jwt com payload padronizado (sub, email).
-
-Argon2: Utilizado para o hashing de senhas, seguindo as recomendações atuais da OWASP para resistência a ataques de força bruta.
-
-Estratégia de Armazenamento: O token de acesso não é retornado no corpo da resposta. Ele é enviado ao cliente através de um Cookie httpOnly, impedindo o acesso via JavaScript e mitigando ataques de XSS (Cross-Site Scripting).
-
-O fluxo de descriptografia no método `findAll` segue um padrão de **Data Transformation**:
-
-1.  O Service solicita ao Prisma os campos `cpfEncrypted`.
-2.  A função `cpfDecryption` desmembra a string do banco (`IV : AuthTag : TextoCifrado`).
-3.  O algoritmo valida a integridade via `setAuthTag`.
-4.  O dado limpo é mapeado para o retorno, e os campos sensíveis originais são removidos da resposta JSON final.
-
----
-
-## 📝 Roadmap de Desenvolvimento
-
-- [✅] Validação de duplicidade.
-- [✅] Implementação de Autenticação via JWT.
-- [ ] Criação de mais entidades do banco de dados
+| Método     | Rota            | Descrição                                                      | Protegida |
+| :--------- | :-------------- | :------------------------------------------------------------- | :-------: |
+| **POST**   | `/users`        | Cadastra funcionário e endereço (Criptografia GCM automática). |    ❌     |
+| **GET**    | `/users`        | Lista funcionários com CPF descriptografado (Visão Admin).     |    🔒     |
+| **GET**    | `/users/:id`    | Retorna os detalhes de um funcionário específico.              |    🔒     |
+| **PATCH**  | `/users/:id`    | Atualiza os dados de um usuário específico.                    |    🔒     |
+| **DELETE** | `/users/:id`    | Deleta o usuário do banco de dados.                            |    🔒     |
+| **POST**   | `/auth/login`   | Realiza a autênticação de um usuário já cadastrado.            |    ❌     |
+| **POST**   | `/auth/profile` | Retorna os dados do usuário autenticado.                       |    🔒     |
+| **GET**    | `/refresh`      | Gera um novo token válido.                                     |    🔒     |
+| **POST**   | `/logout`       | Encerra a sessão do usuário.                                   |    🔒     |
 
 ---
 

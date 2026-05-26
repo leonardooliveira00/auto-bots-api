@@ -13,7 +13,6 @@ export class LoginDto {
   email!: string;
 
   @ApiProperty({ example: 'Senha@123' })
-  @IsString()
   @IsStrongPassword({
     minLength: 8,
     minLowercase: 1,
@@ -21,6 +20,7 @@ export class LoginDto {
     minNumbers: 1,
     minSymbols: 1,
   })
+  @IsString()
   @IsNotEmpty()
   password!: string;
 }
