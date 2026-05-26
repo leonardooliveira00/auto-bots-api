@@ -93,6 +93,11 @@ export class StockService {
       }),
 
       this.prisma.stock.findMany({
+        where: {
+          product: {
+            isActive: true,
+          },
+        },
         include: {
           product: true,
         },

@@ -5,11 +5,12 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  Max,
   MaxLength,
-  Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateStockDto } from '../../stock/dto/create-stock.dto';
 
 export class CreateProductDto {
   @MaxLength(50)
@@ -33,24 +34,7 @@ export class CreateProductDto {
   @IsNotEmpty()
   price!: number;
 
-  @IsInt({ message: 'A quantidade inicial deve ser um número inteiro.' })
-  @Min(1, { message: 'A quantidade inicial física não pode ser menor que 1.' })
-  @IsNotEmpty()
-  quantity!: number;
-
-  @IsInt({
-    message:
-      'A quantidade mímina do estoque de um produto deve ser um número inteiro.',
-  })
-  @Min(1)
-  @IsNotEmpty()
-  minStock!: number;
-
-  @IsInt({
-    message:
-      'A quantidade máxima do estoque de um produto deve ser um número inteiro.',
-  })
-  @Max(999)
-  @IsOptional()
-  maxStock?: number | undefined;
+  @ValidateNested()
+  @Type(() => CreateStockDto)
+  stock!: CreateStockDto;
 }

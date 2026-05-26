@@ -1,4 +1,6 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
+import { Stock } from '../../stock/entities/stock.entity';
 
 export class Product {
   @Expose() product_id!: string;
@@ -15,6 +17,10 @@ export class Product {
   @Expose() isActive!: boolean;
   @Expose() createdAt!: Date;
   @Expose() updatedAt!: Date;
+
+  @ValidateNested()
+  @Type(() => Stock)
+  stock!: Stock | null;
 
   constructor(partial: Partial<Product>) {
     Object.assign(this, partial);

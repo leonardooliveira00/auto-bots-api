@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -41,8 +42,13 @@ export class ProductsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const product = await this.productsService.findOne(id);
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('includeStatus') includeStatus?: string,
+  ) {
+    const shouldIncludeStatus = includeStatus === 'true';
+    const product = await this.productsService.findOne(id, shouldIncludeStatus);
+
     return new Product({
       ...product,
       price: Number(product.price),
