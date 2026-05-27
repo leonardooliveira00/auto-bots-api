@@ -1,4 +1,5 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { maskPostalCode } from '../../../utils/masks/mask.cep';
 
 export class AddressEntity {
   @Expose() address_id!: string;
@@ -7,7 +8,10 @@ export class AddressEntity {
   @Expose() complement?: string | null;
   @Expose() city!: string;
   @Expose() state!: string;
-  @Expose() postalCode!: string;
+
+  @Transform(({ value }) => (value ? maskPostalCode(value) : ''))
+  @Expose()
+  postalCode!: string;
 
   @Exclude() userId!: string;
 
