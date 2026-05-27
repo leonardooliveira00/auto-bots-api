@@ -34,7 +34,7 @@ export class CreateUserDto {
   @IsMobilePhone('pt-BR')
   @MaxLength(11)
   @IsNotEmpty()
-  phoneNumber!: string;
+  phone!: string;
 
   @IsStrongPassword({
     minLength: 8,

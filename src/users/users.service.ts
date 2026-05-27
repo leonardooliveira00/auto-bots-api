@@ -8,11 +8,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../../prisma.service';
 
 import { generatePasswordHash } from '../../utils/encryption/hash.password';
-import { generateCpfHash } from '../../utils/encryption/hash.cpf';
-import { cpfEncryption } from '../../utils/encryption/cpf.encryption';
+import { generateHash } from '../../utils/encryption/hash';
+import { dataEncryption } from '../../utils/encryption/data.encryption';
 import { User } from './entities/user.entity';
 import { CacheService } from '../common/cache/cache.service';
-import { instanceToPlain } from 'class-transformer';
 import { SessionService } from '../sessions/session.service';
 
 @Injectable()
@@ -25,7 +24,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const passwordHash = await generatePasswordHash(createUserDto.password);
-    const cpfHash = generateCpfHash(createUserDto.cpf);
+    const cpfHash = generateHash(createUserDto.cpf);
 
     const userArleadyExists = await this.prisma.user.findFirst({
       where: {
@@ -36,7 +35,7 @@ export class UsersService {
     if (userArleadyExists)
       throw new ConflictException('Email ou CPF já cadastrados.');
 
-    const cpfEncrypted = cpfEncryption(createUserDto.cpf);
+    const cpfEncrypted = dataEncryption(createUserDto.cpf);
 
     const { address, cpf, password, ...userData } = createUserDto;
 
