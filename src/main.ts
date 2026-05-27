@@ -13,8 +13,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('AutoBots API')
     .setDescription('API para sistema de oficina mecânica.')
-    .setVersion('1.0')
-    .addTag('cars')
+    .setVersion('3.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
