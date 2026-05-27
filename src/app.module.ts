@@ -11,6 +11,8 @@ import { CachingModule } from './common/cache/cache.module';
 import { SessionModule } from './sessions/session.module';
 import { ProductsModule } from './products/products.module';
 import { StockModule } from './stock/stock.module';
+import { CustomersModule } from './customers/customers.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -43,6 +45,10 @@ import { StockModule } from './stock/stock.module';
     ProductsModule,
 
     StockModule,
+
+    CustomersModule,
+
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

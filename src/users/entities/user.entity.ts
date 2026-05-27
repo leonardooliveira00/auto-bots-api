@@ -1,19 +1,26 @@
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { AddressEntity } from './address.entity';
-import { cpfDecryption } from '../../../utils/encryption/cpf.encryption';
+import { dataDecryption } from '../../../utils/encryption/data.encryption';
 import { maskCpf } from '../../../utils/masks/mask.cpf';
 import { ValidateNested } from 'class-validator';
+import { maskPhone } from '../../../utils/masks/mask.phone';
 
 export class User {
   @Expose() user_id!: string;
   @Expose() name!: string;
   @Expose() lastname!: string;
-  @Expose() email!: string;
-  @Expose() phoneNumber!: string;
+
   @Expose()
   get cpf(): string {
-    return this.cpfEncrypted ? maskCpf(cpfDecryption(this.cpfEncrypted)) : '';
+    return this.cpfEncrypted ? maskCpf(dataDecryption(this.cpfEncrypted)) : '';
   }
+
+  @Expose()
+  email!: string;
+
+  @Expose()
+  @Transform(({ value }) => (value ? maskPhone(value) : ''))
+  phone!: string;
 
   @Exclude()
   cpfHash!: string;

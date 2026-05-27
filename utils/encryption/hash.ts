@@ -4,7 +4,7 @@ dotenv.config();
 
 // Essa função tem o objetivo de checar a duplicidade do CPF com o banco de dados.
 // Exemplo: Verificar se o CPF digitado pelo usuário já foi cadastrado ou não.
-export const generateCpfHash = (cpf: string): string => {
+export const generateHash = (cpf: string): string => {
   const keyHex = process.env.CPF_HMAC_KEY;
   if (!keyHex) throw new Error('CPF_HMAC_KEY não definida');
 

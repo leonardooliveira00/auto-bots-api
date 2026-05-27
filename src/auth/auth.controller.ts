@@ -10,6 +10,12 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 
@@ -18,6 +24,7 @@ import { UseAuth } from './auth.decorator';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { RefreshTokenGuard } from './refresh.token.guard';
 
+@ApiTags('Autenticação e Sessão')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -25,6 +32,27 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerGuard)
   @Post('login')
+  @ApiOperation({
+    summary: 'Realiza a autenticação do usuário',
+    description:
+      'Valida as credenciais por e-mail e senha, aplica rate limit via ThrottlerGuard e emite cookies HTTPOnly criptografados (access_token e refresh_token) assinados para o gerenciamento seguro da sessão.',
+  })
+  @ApiOkResponse({
+    description:
+      'Autenticação bem-succeeded. Cookies injetados na resposta HTTP.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payload inválido ou mal formatado.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Credenciais inválidas (E-mail ou senha incorretos).',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Muitas tentativas de login bloqueadas por Rate Limit.',
+  })
   async signIn(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
@@ -58,6 +86,22 @@ export class AuthController {
 
   @UseGuards(ThrottlerGuard, RefreshTokenGuard)
   @Post('refresh')
+  @ApiOperation({
+    summary: 'Renova o Access Token expirado',
+    description:
+      'Utiliza o Refresh Token contido no cookie assinado para revalidar a sessão do usuário no Redis e emitir um novo par de tokens sem exigir novas credenciais.',
+  })
+  @ApiOkResponse({
+    description: 'Sessão revalidada e novos cookies injetados.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh Token ausente, inválido ou revogado no Redis.',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Abuso na rota de renovação de sessão bloqueada.',
+  })
   async refresh(
     @Request() req,
     @Res({ passthrough: true }) response: Response,
@@ -90,6 +134,16 @@ export class AuthController {
 
   @UseAuth()
   @Post('logout')
+  @ApiOperation({
+    summary: 'Encerra a sessão atual',
+    description:
+      'Invalida os tokens ativos na camada de cache do Redis e limpa os cookies HTTPOnly da requisição do cliente.',
+  })
+  @ApiOkResponse({ description: 'Sessão revogada com sucesso em produção.' })
+  @ApiResponse({
+    status: 401,
+    description: 'Requisição não autorizada (sem credenciais válidas).',
+  })
   async logout(@Request() req, @Res({ passthrough: true }) response: Response) {
     await this.authService.logout(req.user.sub);
 
@@ -101,6 +155,15 @@ export class AuthController {
 
   @UseAuth()
   @Get('profile')
+  @ApiOperation({
+    summary: 'Obtém o perfil do usuário logado',
+    description:
+      'Decodifica os dados extraídos do AccessToken decodificado pelo guard de autenticação global.',
+  })
+  @ApiOkResponse({
+    description: 'Dados cadastrais do token recuperados com sucesso.',
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido ou expirado.' })
   getProfile(@Request() req) {
     return req.user;
   }

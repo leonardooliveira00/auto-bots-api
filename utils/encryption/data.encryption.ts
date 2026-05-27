@@ -9,7 +9,7 @@ const key = Buffer.from(keyHex, 'hex');
 if (key.length !== 32)
   throw new Error('CPF_AES_KEY de conter 32 bytes (64 caracteres hex).');
 
-export const cpfEncryption = (cpf: string): string => {
+export const dataEncryption = (cpf: string): string => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
@@ -21,7 +21,7 @@ export const cpfEncryption = (cpf: string): string => {
   return `${iv.toString('hex')}:${authTag}:${encrypted}`;
 };
 
-export function cpfDecryption(encryptedText: string): string {
+export function dataDecryption(encryptedText: string): string {
   const [ivHex, authTagHex, encrypted] = encryptedText.split(':');
   const iv = Buffer.from(ivHex, 'hex');
   const authTag = Buffer.from(authTagHex, 'hex');
