@@ -12,43 +12,58 @@ import { Transform, Type } from 'class-transformer';
 import { CreateAddressDto } from './create-address.dto';
 
 export class CreateUserDto {
-  @IsString()
-  @MaxLength(50)
-  @MinLength(2)
-  @IsNotEmpty()
+  @IsString({ message: 'O nome deve ser uma cadeia de caracteres.' })
+  @MaxLength(50, { message: 'O nome deve conter no máximo 50 caracteres.' })
+  @MinLength(2, { message: 'O nome deve conter no mínimo 2 caracteres.' })
+  @IsNotEmpty({ message: 'O campo nome é obrigatório.' })
   name!: string;
 
-  @IsString()
-  @MaxLength(50)
-  @MinLength(2)
-  @IsNotEmpty()
+  @IsString({ message: 'O sobrenome deve ser uma cadeia de caracteres.' })
+  @MaxLength(50, {
+    message: 'O sobrenome deve conter no máximo 50 caracteres.',
+  })
+  @MinLength(2, { message: 'O sobrenome deve conter no mínimo 2 caracteres.' })
+  @IsNotEmpty({ message: 'O campo sobrenome é obrigatório.' })
   lastname!: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'Por favor, insira um formato de e-mail válido.' })
+  @IsNotEmpty({ message: 'O campo e-mail é obrigatório.' })
   @Transform(({ value }) =>
     typeof value === 'string' ? value.toLowerCase().trim() : value,
   )
   email!: string;
 
-  @IsMobilePhone('pt-BR')
-  @MaxLength(11)
-  @IsNotEmpty()
+  @IsMobilePhone(
+    'pt-BR',
+    {},
+    {
+      message:
+        'O número de telefone informado deve ser um celular válido no padrão brasileiro.',
+    },
+  )
+  @MaxLength(11, { message: 'O telefone deve conter no máximo 11 dígitos.' })
+  @IsNotEmpty({ message: 'O campo telefone é obrigatório.' })
   phone!: string;
 
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 1,
-  })
-  @IsNotEmpty()
+  @IsStrongPassword(
+    {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    },
+    {
+      message:
+        'A senha deve conter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.',
+    },
+  )
+  @IsNotEmpty({ message: 'O campo senha é obrigatório.' })
   password!: string;
 
-  @IsString()
-  @MaxLength(11)
-  @IsNotEmpty()
+  @IsString({ message: 'O CPF deve ser uma cadeia de caracteres.' })
+  @MaxLength(11, { message: 'O CPF deve conter no máximo 11 dígitos.' })
+  @IsNotEmpty({ message: 'O campo CPF é obrigatório.' })
   @Transform(({ value }) =>
     typeof value === 'string' ? value.replace(/\D/g, '') : value,
   )
@@ -56,6 +71,6 @@ export class CreateUserDto {
 
   @ValidateNested()
   @Type(() => CreateAddressDto)
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Os dados do endereço são obrigatórios.' })
   address!: CreateAddressDto;
 }
