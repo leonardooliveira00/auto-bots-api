@@ -3,5 +3,5 @@ export const maskCpf = (cpf: string): string => {
 
   if (clearCpf.length !== 11) return cpf;
 
-  return clearCpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '***.$2.$3-**');
+  return clearCpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.***.***-$4');
 };

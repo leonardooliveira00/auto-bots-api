@@ -1,4 +1,7 @@
-# AutoBots API - Sistema de Gestão de Oficina Mecânica
+---
+sidebar_position: 2
+title: Visão Geral da Arquitetura
+---
 
 # Visão Geral da Arquitetura e Decisões de Engenharia
 

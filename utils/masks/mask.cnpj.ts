@@ -7,6 +7,6 @@ export const maskCnpj = (cnpj: string): string => {
 
   return clearCnpj.replace(
     /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-    '**.$2.$3/$4-**',
+    '$1.***.***/****-$5',
   );
 };
