@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Auto-Bots Docs',
-  tagline: 'Documentação do Sistema de Automação',
+  tagline: 'Documentação do Sistema de Gerenciamento de Oficina Mecânica',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
