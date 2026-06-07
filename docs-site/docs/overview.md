@@ -1,4 +1,5 @@
 ---
+slug: /overview
 sidebar_position: 2
 title: Visão Geral da Arquitetura
 ---
