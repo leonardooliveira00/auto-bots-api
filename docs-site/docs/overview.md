@@ -38,9 +38,10 @@ Cada componente da nossa infraestrutura foi selecionado para resolver problemas 
 
 ### Ambientes e Documentação
 
-- **🚀 API em Produção (Deploy):** [https://auto-bots-api-production-e878.up.railway.app](https://auto-bots-api-production-e878.up.railway.app)
-- **📖 Documentação Swagger (Ambiente Local):** `http://localhost:3000/api/`
-- **📬 Documentação Swagger (Produção):** [https://auto-bots-api-production-e878.up.railway.app/api](https://auto-bots-api-production-e878.up.railway.app/api)
+- **API em Produção (Deploy):** [https://auto-bots-api-production.up.railway.app](https://auto-bots-api-production.up.railway.app)
+- **Documentação Swagger (Ambiente Local):** `http://localhost:3000/api/`
+- **Documentação Swagger (Produção):** [https://auto-bots-api-production.up.railway.app/api](https://auto-bots-api-production.up.railway.app/api)
+- **Documentação Técnica (Produção):** [https://auto-bots-api.vercel.app/](https://auto-bots-api.vercel.app/)
 
 ---
 
