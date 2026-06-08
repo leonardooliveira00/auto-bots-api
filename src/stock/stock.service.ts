@@ -26,6 +26,17 @@ export class StockService {
         'A quantidade de movimentação de produtos deve ser maior do que 0.',
       );
 
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { employee_id: true },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(
+        'Não foi possível registrar a movimentação pois o funcionário operador não foi encontrado.',
+      );
+    }
+
     return await this.prisma.$transaction(async (tx) => {
       const stock = await tx.stock.findUnique({ where: { productId } });
 
@@ -65,7 +76,7 @@ export class StockService {
           quantity,
           type,
           reason,
-          userId,
+          employeeId: employee.employee_id,
         },
       });
 
@@ -73,7 +84,7 @@ export class StockService {
         message: `Movimentação de ${type === MovementType.IN ? 'entrada' : 'saída'} registrada com sucesso.`,
         movement_id: movement.movement_id,
         productId: movement.productId,
-        userId: movement.userId,
+        employeeId: movement.employeeId,
         type: movement.type,
         reason: movement.reason,
         quantityMoved: movement.quantity,
