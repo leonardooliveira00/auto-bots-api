@@ -1,82 +1,49 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+
 import { PrismaService } from '../../prisma.service';
 
-import { generatePasswordHash } from '../../utils/encryption/hash.password';
-import { generateHash } from '../../utils/encryption/hash';
-import { dataEncryption } from '../../utils/encryption/data.encryption';
-import { User } from './entities/user.entity';
-import { CacheService } from '../common/cache/cache.service';
+import { generatePasswordHash } from '../utils/encryption/hash.password';
 import { SessionService } from '../sessions/session.service';
+
+import argon2 from 'argon2';
+import e from 'express';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private sessionService: SessionService,
-    private cacheService: CacheService,
   ) {}
-
-  async create(createUserDto: CreateUserDto) {
-    const passwordHash = await generatePasswordHash(createUserDto.password);
-    const cpfHash = generateHash(createUserDto.cpf);
-
-    const userArleadyExists = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: createUserDto.email }, { cpfHash: cpfHash }],
-      },
-    });
-
-    if (userArleadyExists)
-      throw new ConflictException('Email ou CPF já cadastrados.');
-
-    const cpfEncrypted = dataEncryption(createUserDto.cpf);
-
-    const { address, cpf, password, ...userData } = createUserDto;
-
-    return await this.prisma.user.create({
-      data: {
-        ...userData,
-        passwordHash,
-        cpfHash,
-        cpfEncrypted,
-        address: {
-          create: { ...address },
-        },
-      },
-      include: { address: true },
-    });
-  }
-
-  async findAll() {
-    return await this.prisma.user.findMany({ include: { address: true } });
-  }
-
-  async findOne(id: string) {
-    const cachedData = await this.cacheService.getCache<any>(`user:${id}`);
-    if (cachedData) return cachedData;
-
-    const user = await this.prisma.user.findUnique({
-      where: { user_id: id },
-      include: { address: true },
-    });
-
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
-
-    await this.cacheService.storeCache(`user:${id}`, user);
-
-    return user;
-  }
 
   async findByEmail(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { address: true },
+      include: { employee: true },
+    });
+
+    if (!user) throw new NotFoundException('Credenciais não encontradas.');
+
+    return user;
+  }
+
+  async findOne(user_id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { user_id },
+    });
+    if (!user) throw new NotFoundException('Usuário não encontrado.');
+
+    return user;
+  }
+
+  async findWithProfile(user_id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { user_id },
+      include: { employee: true },
     });
 
     if (!user) throw new NotFoundException('Usuário não encontrado.');
@@ -84,47 +51,59 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { user_id: id },
-    });
+  async updatePassword(user_id: string, newPassword: string) {
+    const user = await this.findOne(user_id);
 
-    if (!user) throw new NotFoundException('Usuário não encontrado');
+    const matchPassword = await argon2.verify(user.passwordHash, newPassword);
 
-    const { address, ...userData } = updateUserDto;
+    if (matchPassword)
+      throw new ConflictException(
+        'A nova senha não pode ser igual a senha antiga.',
+      );
 
-    const updatedUser = await this.prisma.user.update({
-      where: { user_id: id },
+    const newPasswordHash = await generatePasswordHash(newPassword);
+
+    return await this.prisma.user.update({
+      where: { user_id },
       data: {
-        ...userData,
-        ...(address && {
-          address: {
-            update: address,
-          },
-        }),
+        passwordHash: newPasswordHash,
       },
-      include: { address: true },
     });
-
-    await this.cacheService.clearCache(`user:${id}`);
-
-    return updatedUser;
   }
 
-  async remove(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { user_id: id },
+  async toggleStatus(
+    targetEmployeeId: string,
+    currentUserId: string,
+    isActive: boolean,
+  ) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { employee_id: targetEmployeeId },
+      select: { userId: true },
     });
 
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
+    if (!employee) {
+      throw new NotFoundException('Funcionário não encontrado.');
+    }
 
-    await this.prisma.user.delete({
-      where: { user_id: id },
+    if (!employee.userId) {
+      throw new NotFoundException(
+        'Este funcionário não possui um usuário de login cadastrado.',
+      );
+    }
+
+    if (employee.userId === currentUserId) {
+      throw new BadRequestException(
+        `Operação inválida: Você não pode bloquear ou desativar sua própria credencial.`,
+      );
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { user_id: employee.userId },
+      data: { isActive },
     });
 
-    await this.sessionService.deleteSession(id);
-    await this.cacheService.clearCache(`user:${id}`);
+    if (!isActive) await this.sessionService.deleteSession(employee.userId);
 
-    return { message: `Usuário ${user.name} removido com sucesso.` };
+    return updatedUser;
   }
 }

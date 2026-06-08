@@ -5,15 +5,31 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { jwtConstants } from './auth/constants';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const configService = app.get(ConfigService);
+  const jwtSecret = configService.getOrThrow('JWT_SECRET');
 
   const config = new DocumentBuilder()
     .setTitle('AutoBots API')
     .setDescription('API para sistema de oficina mecânica.')
     .setVersion('3.0')
+
+    .addTag('App', 'Endpoints base do sistema')
+    .addTag('Funcionários', 'Gerenciamento de funcionários e colaboradores')
+    .addTag('Autenticação e Sessão', 'Endpoints de login, logout e tokens')
+    .addTag('Credenciais de Usuários', 'Gerenciamento de senhas e acessos')
+    .addTag('Produtos do Estoque', 'Catálogo de peças e produtos')
+    .addTag('Movimentação e Inventário de Estoque', 'Fluxo de entrada e saída')
+    .addTag('Clientes', 'Gerenciamento de clientes.')
+    .addTag(
+      'Veículos',
+      'Gerenciamentos de veículos que pertencem a um cliente.',
+    )
+
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
@@ -25,7 +41,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use(cookieParser(jwtConstants.secret));
+  app.use(cookieParser(jwtSecret));
 
   app.useGlobalPipes(
     new ValidationPipe({

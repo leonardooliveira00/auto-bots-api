@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiOkResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
@@ -84,6 +85,7 @@ export class AuthController {
     return { message: 'Login realizado com sucesso!', refresh_token };
   }
 
+  @ApiBearerAuth()
   @UseGuards(ThrottlerGuard, RefreshTokenGuard)
   @Post('refresh')
   @ApiOperation({
@@ -132,6 +134,7 @@ export class AuthController {
     return { message: 'Cookies atualizados.' };
   }
 
+  @ApiBearerAuth()
   @UseAuth()
   @Post('logout')
   @ApiOperation({
@@ -153,6 +156,7 @@ export class AuthController {
     return { message: 'Sessão encerrada.' };
   }
 
+  @ApiBearerAuth()
   @UseAuth()
   @Get('profile')
   @ApiOperation({

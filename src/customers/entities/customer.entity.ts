@@ -1,8 +1,8 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Vehicle } from '../../vehicles/entities/vehicle.entity';
-import { maskPhone } from '../../../utils/masks/mask.phone';
-import { maskCpfOrCnpj } from '../../../utils/masks/mask.cpf.cnpj';
-import { dataDecryption } from '../../../utils/encryption/data.encryption';
+import { maskPhone } from '../../utils/masks/mask.phone';
+import { maskCpfOrCnpj } from '../../utils/masks/mask.cpf.cnpj';
+import { dataDecryption } from '../../utils/encryption/data.encryption';
 
 export class Customer {
   @Expose() customer_id!: string;

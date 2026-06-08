@@ -1,118 +1,85 @@
 import {
   Controller,
-  Get,
-  Post,
   Body,
   Patch,
   Param,
-  Delete,
   ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePasswordDto } from './dto/update.password.dto';
 import { UseAuth } from '../auth/auth.decorator';
 import { User } from './entities/user.entity';
 
 import {
   ApiTags,
   ApiOperation,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
+import { ToggleStatusDto } from './dto/toggle.status.dto';
 
-@ApiTags('Funcionários / Usuários')
+@ApiTags('Credenciais de Usuários')
+@ApiBearerAuth()
+@UseAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('register')
+  @Patch(':id/change-password')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Registra um novo funcionário',
+    summary: 'Altera a senha de uma credencial',
     description:
-      'Rota pública para cadastro inicial de administradores ou mecânicos. O CPF é higienizado na entrada, salvo mascarado (LGPD-Ready) e os dados de endereço são tratados em cascata.',
-  })
-  @ApiCreatedResponse({
-    description:
-      'Funcionário cadastrado com sucesso na base de dados corporativa.',
-    type: User,
-  })
-  async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.usersService.create(createUserDto);
-    return new User(user);
-  }
-
-  @ApiBearerAuth()
-  @UseAuth()
-  @Get()
-  @ApiOperation({
-    summary: 'Lista todos os funcionários cadastrados',
-    description:
-      'Exibe a listagem completa da equipe interna da oficina mecânica, aplicando ocultação reativa de hashes de segurança.',
+      'Verifica se a nova senha não é igual à atual e atualiza o hash criptográfico no banco.',
   })
   @ApiOkResponse({
-    type: [User],
-    description:
-      'Listagem dos usuários corporativos devolvida de forma sanitizada.',
+    description: 'Senha atualizada com sucesso.',
   })
-  async findAll() {
-    const users = await this.usersService.findAll();
-    return users.map((user) => new User(user));
-  }
-
-  @ApiBearerAuth()
-  @UseAuth()
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Busca um funcionário por ID',
-    description:
-      'Busca os dados de perfil de um funcionário de forma restrita, retornando o CPF tratado dinamicamente no formato class-transformer.',
-  })
-  @ApiOkResponse({ type: User, description: 'Usuário mapeado com sucesso.' })
-  @ApiParam({
-    name: 'id',
-    format: 'uuid',
-    description: 'ID do usuário corporativo',
-  })
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const user = await this.usersService.findOne(id);
-    return new User(user);
-  }
-
-  @ApiBearerAuth()
-  @UseAuth()
-  @Patch(':id')
-  @ApiOperation({
-    summary: 'Atualiza o perfil do colaborador',
-    description:
-      'Permite alterar credenciais de contato ou dados residenciais do usuário cadastrado.',
-  })
-  @ApiOkResponse({
-    type: User,
-    description: 'Modificações persistidas com sucesso.',
-  })
-  async update(
+  @ApiParam({ name: 'id', format: 'uuid', description: 'ID do usuário' })
+  async updatePassword(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    const user = await this.usersService.update(id, updateUserDto);
-    return new User(user);
+    await this.usersService.updatePassword(id, updatePasswordDto.newPassword);
+    return { message: 'Senha atualizada com sucesso.' };
   }
 
-  @ApiBearerAuth()
-  @UseAuth()
-  @Delete(':id')
+  @Patch(':id/toggle-status')
   @ApiOperation({
-    summary: 'Desativa/Exclui um funcionário',
+    summary: 'Ativa ou bloqueia o login de um usuário',
     description:
-      'Derruba o vínculo do colaborador no sistema para bloquear acessos futuros nas políticas de segurança.',
+      'Chaveia a flag isActive. Se a conta for desativada (false), a sessão correspondente no Redis é derrubada na hora.',
   })
   @ApiOkResponse({
-    description: 'Usuário removido das dependências ativas da plataforma.',
+    type: User,
+    description: 'Status do usuário modificado com sucesso.',
   })
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
+  @ApiParam({ name: 'id', format: 'uuid', description: 'ID do usuário alvo' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        isActive: { type: 'boolean', description: 'Novo estado da conta' },
+      },
+      required: ['isActive'],
+    },
+  })
+  async toggleStatus(
+    @Param('id', ParseUUIDPipe) targetId: string,
+    @Request() req,
+    @Body() toggleStatusDto: ToggleStatusDto,
+  ): Promise<User> {
+    const currentUserId = req.user.sub;
+    const updatedUser = await this.usersService.toggleStatus(
+      targetId,
+      currentUserId,
+      toggleStatusDto.isActive,
+    );
+    return new User(updatedUser);
   }
 }

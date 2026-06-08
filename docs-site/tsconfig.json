@@ -4,9 +4,21 @@
 {
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
+    "target": "es2025",
+    "lib": ["DOM", "DOM.Iterable", "ES2025"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "jsx": "react-jsx",
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
-    "strict": true
+    "strict": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "paths": {
+      "@site/*": ["*"]
+    }
   },
+  "include": ["src/**/*"],
   "exclude": [".docusaurus", "build"]
 }

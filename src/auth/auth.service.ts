@@ -7,7 +7,7 @@ import { SessionService } from '../sessions/session.service';
 import {
   generateTokenHash,
   verifyTokenHash,
-} from '../../utils/encryption/hash.token';
+} from '../utils/encryption/hash.token';
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,9 +16,11 @@ export class AuthService {
     private sessionService: SessionService,
   ) {}
 
-  async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (!user) throw new UnauthorizedException('Email ou senha incorretos.');
+
+    if (!user.isActive)
+      throw new UnauthorizedException('Esta conta de usuário está desativada.');
 
     const matchPassword = await argon2.verify(user.passwordHash, password);
 
@@ -34,7 +36,10 @@ export class AuthService {
     const payload = {
       sub: user.user_id,
       email: user.email,
-      name: user.name,
+      employeeId: user.employee?.employee_id || null,
+      role: user.employee?.role || null,
+      firstName: user.employee?.firstName || null,
+      lastName: user.employee?.lastName || null,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -70,10 +75,10 @@ export class AuthService {
       );
     }
 
-    const user = await this.usersService.findOne(userId);
+    const user = await this.usersService.findWithProfile(userId);
 
     const newRefreshToken = await this.jwtService.signAsync(
-      { sub: user.user_id, iat: Math.floor(Date.now() / 100) },
+      { sub: user.user_id },
       { expiresIn: '7d' },
     );
 
@@ -84,7 +89,10 @@ export class AuthService {
     const payload = {
       sub: user.user_id,
       email: user.email,
-      name: user.name,
+      employeeId: user.employee?.employee_id || null,
+      role: user.employee?.role || null,
+      firstName: user.employee?.firstName || null,
+      lastName: user.employee?.lastName || null,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {

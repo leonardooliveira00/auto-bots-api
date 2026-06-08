@@ -6,8 +6,8 @@ import {
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { PrismaService } from '../../prisma.service';
-import { generateHash } from '../../utils/encryption/hash';
-import { dataEncryption } from '../../utils/encryption/data.encryption';
+import { generateHash } from '../utils/encryption/hash';
+import { dataEncryption } from '../utils/encryption/data.encryption';
 
 @Injectable()
 export class CustomersService {

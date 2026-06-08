@@ -13,30 +13,59 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
+model User {
   user_id String @id @default(uuid()) @db.Uuid
-  name String @db.VarChar(50)
-  lastname String @db.VarChar(50)
   email String @unique
-  phone String @db.VarChar(11) @unique
-
   passwordHash String @map("password_hash")
-  cpfHash String @unique @map("cpf_hash")
-  cpfEncrypted String @map("cpf_encrypted")
-
-  address Address?
+  isActive Boolean @default(true) @map("is_active")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  employee Employee?
+
   @@map("users")
+}
+
+enum Role {
+  Mechanic
+  Attendant
+  Admin
+  Manager
+}
+
+model Employee{
+  employee_id String @id @default(uuid()) @db.Uuid
+  firstName String @db.VarChar(50)
+  lastName String @db.VarChar(50)
+  phone String @db.VarChar(11) @unique
+
+  cpfHash String @unique @map("cpf_hash")
+  cpfEncrypted String @map("cpf_encrypted")
+
+  role Role
+  salary Decimal @db.Decimal(10, 2)
+
+  admissionDate DateTime @map("admission_date")
+  resignationDate DateTime? @map("resignation_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  userId String? @unique @db.Uuid @map("user_id")
+  user User?  @relation(fields: [userId], references: [user_id], onDelete: SetNull)
+  address Address?
+
+  @@map("employees")
 }
 
 model Address{
   address_id String @id @default(uuid()) @db.Uuid
-  userId String @unique @db.Uuid @map("user_id")
+  employeeId String @unique @db.Uuid @map("employee_id")
   street String
   number String
+  district String
   complement String?
   city String
   state String
@@ -45,7 +74,7 @@ model Address{
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [employee_id], onDelete: Cascade)
 
   @@map("addresses")
 }

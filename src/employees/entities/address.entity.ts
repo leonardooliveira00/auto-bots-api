@@ -1,10 +1,11 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { maskPostalCode } from '../../../utils/masks/mask.cep';
+import { maskPostalCode } from '../../utils/masks/mask.cep';
 
-export class AddressEntity {
+export class Address {
   @Expose() address_id!: string;
   @Expose() street!: string;
   @Expose() number!: string;
+  @Expose() district!: string;
   @Expose() complement?: string | null;
   @Expose() city!: string;
   @Expose() state!: string;
@@ -13,9 +14,11 @@ export class AddressEntity {
   @Expose()
   postalCode!: string;
 
-  @Exclude() userId!: string;
+  @Exclude() employeeId!: string;
+  @Exclude() createdAt!: Date;
+  @Exclude() updatedAt!: Date;
 
-  constructor(partial: Partial<AddressEntity>) {
+  constructor(partial: Partial<Address>) {
     Object.assign(this, partial);
   }
 }

@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -18,6 +19,10 @@ export class CreateAddressDto {
   @IsString({ message: 'O complemento deve ser uma cadeia de caracteres.' })
   @IsOptional()
   complement?: string;
+
+  @IsString({ message: 'O bairro deve ser uma cadeia de caracteres.' })
+  @IsNotEmpty({ message: 'O campo bairro é obrigatório.' })
+  district!: string;
 
   @IsPostalCode('BR', {
     message: 'O código postal informado deve ser um CEP brasileiro válido.',
