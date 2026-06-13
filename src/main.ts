@@ -6,8 +6,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '../generated/prisma/client';
+import { CustomSerializerInterceptor } from './common/interceptors/custom-serializer.interceptor';
 
 async function bootstrap() {
+  (Prisma.Decimal.prototype as any).toJSON = function () {
+    return this.toNumber();
+  };
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
@@ -52,7 +58,7 @@ async function bootstrap() {
   );
 
   const reflector = app.get(Reflector);
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+  app.useGlobalInterceptors(new CustomSerializerInterceptor(reflector));
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

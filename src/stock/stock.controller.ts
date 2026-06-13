@@ -25,6 +25,10 @@ interface AuthenticadedRequest extends Request {
   user: {
     sub: string;
     email: string;
+    employeeId: string;
+    role: string | null;
+    firstName: string | null;
+    lastName: string | null;
   };
 }
 
@@ -48,11 +52,11 @@ export class StockController {
     @Body() createStockMovementDto: CreateStockMovementDto,
     @Req() req: AuthenticadedRequest,
   ) {
-    const userId = req.user.sub;
+    const employeeId = req.user.employeeId;
 
     return await this.stockService.createMovement({
       ...createStockMovementDto,
-      userId,
+      employeeId,
     });
   }
 

@@ -38,7 +38,6 @@ export class Employee {
   phone!: string;
 
   @Expose()
-  @Transform(({ value }) => (value ? Number(value) : 0))
   salary!: Prisma.Decimal | number;
 
   @Expose()

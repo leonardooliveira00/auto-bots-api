@@ -14,6 +14,7 @@ import { StockModule } from './stock/stock.module';
 import { CustomersModule } from './customers/customers.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { EmployeesModule } from './employees/employees.module';
+import { OrderServicesModule } from './order-services/order-services.module';
 
 @Module({
   imports: [
@@ -52,6 +53,8 @@ import { EmployeesModule } from './employees/employees.module';
     VehiclesModule,
 
     EmployeesModule,
+
+    OrderServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

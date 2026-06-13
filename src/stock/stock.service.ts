@@ -5,29 +5,33 @@ import {
 } from '@nestjs/common';
 import { MovementType } from '../../generated/prisma/enums';
 import { PrismaService } from '../../prisma.service';
+import { Prisma } from '../../generated/prisma/client';
 
 interface CreateMovementInput {
   productId: string;
   quantity: number;
   type: MovementType;
   reason?: string;
-  userId: string;
+  employeeId: string;
 }
 
 @Injectable()
 export class StockService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createMovement(input: CreateMovementInput): Promise<any> {
-    const { productId, quantity, type, reason, userId } = input;
+  async createMovement(
+    input: CreateMovementInput,
+    externalTx?: Prisma.TransactionClient,
+  ): Promise<any> {
+    const { productId, quantity, type, reason, employeeId } = input;
 
     if (quantity <= 0)
       throw new BadRequestException(
         'A quantidade de movimentação de produtos deve ser maior do que 0.',
       );
 
-    const employee = await this.prisma.employee.findUnique({
-      where: { userId },
+    const employee = await (externalTx || this.prisma).employee.findUnique({
+      where: { employee_id: employeeId },
       select: { employee_id: true },
     });
 
@@ -37,7 +41,7 @@ export class StockService {
       );
     }
 
-    return await this.prisma.$transaction(async (tx) => {
+    const executeTransaction = async (tx: Prisma.TransactionClient) => {
       const stock = await tx.stock.findUnique({ where: { productId } });
 
       if (!stock)
@@ -90,33 +94,27 @@ export class StockService {
         quantityMoved: movement.quantity,
         newStockQuantity: updatedStock.quantity,
       };
-    });
+    };
+
+    if (externalTx) {
+      return executeTransaction(externalTx);
+    }
+
+    return this.prisma.$transaction(async (tx) => executeTransaction(tx));
   }
 
   async findAllInventory() {
-    const [totalProducts, stockAggregation, inventaryList] = await Promise.all([
-      this.prisma.product.count(),
+    const totalProducts = await this.prisma.product.count();
 
-      this.prisma.stock.aggregate({
-        _sum: {
-          quantity: true,
-        },
-      }),
+    const stockAggregation = await this.prisma.stock.aggregate({
+      _sum: { quantity: true },
+    });
 
-      this.prisma.stock.findMany({
-        where: {
-          product: {
-            isActive: true,
-          },
-        },
-        include: {
-          product: true,
-        },
-        orderBy: {
-          quantity: 'asc',
-        },
-      }),
-    ]);
+    const inventaryList = await this.prisma.stock.findMany({
+      where: { product: { isActive: true } },
+      include: { product: true },
+      orderBy: { createdAt: 'asc' },
+    });
 
     const totalUnits = stockAggregation._sum.quantity ?? 0;
 

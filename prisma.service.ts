@@ -11,7 +11,7 @@ export class PrismaService
   constructor() {
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 10,
+      max: 20,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 2000,
     });

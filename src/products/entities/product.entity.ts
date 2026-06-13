@@ -9,9 +9,6 @@ export class Product {
   @Expose() description?: string | null;
 
   @Expose()
-  @Transform(({ value }) => {
-    return value ? Number(value) : 0;
-  })
   price!: number;
 
   @Expose() isActive!: boolean;
