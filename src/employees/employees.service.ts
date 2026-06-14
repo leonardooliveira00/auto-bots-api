@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import { Employee } from './entities/employee.entity';
 
 import { PrismaService } from '../../prisma.service';
 
@@ -23,12 +22,12 @@ export class EmployeesService {
     private cacheService: CacheService,
   ) {}
 
-  async create(createEmployeeDto: CreateEmployeeDto): Promise<any> {
-    const passwordHash = await generatePasswordHash(createEmployeeDto.password);
-    const cpfHash = generateHash(createEmployeeDto.cpf);
+  async create(dto: CreateEmployeeDto): Promise<any> {
+    const passwordHash = await generatePasswordHash(dto.password);
+    const cpfHash = generateHash(dto.cpf);
 
     const emailExists = await this.prisma.user.findUnique({
-      where: { email: createEmployeeDto.email },
+      where: { email: dto.email },
     });
 
     const cpfExists = await this.prisma.employee.findFirst({
@@ -40,10 +39,9 @@ export class EmployeesService {
         'Email ou CPF já cadastrados para um funcionário ativo.',
       );
 
-    const cpfEncrypted = dataEncryption(createEmployeeDto.cpf);
+    const cpfEncrypted = dataEncryption(dto.cpf);
 
-    const { address, password, email, cpf, ...employeeData } =
-      createEmployeeDto;
+    const { address, password, email, cpf, ...employeeData } = dto;
 
     return await this.prisma.employee.create({
       data: {
@@ -78,31 +76,31 @@ export class EmployeesService {
     });
   }
 
-  async findOne(employee_id: string) {
+  async findOne(employeeId: string) {
     const cachedData = await this.cacheService.getCache<any>(
-      `employee:${employee_id}`,
+      `employee:${employeeId}`,
     );
     if (cachedData) return cachedData;
 
     const employee = await this.prisma.employee.findFirst({
-      where: { employee_id },
+      where: { employeeId },
       include: { address: true, user: true },
     });
 
     if (!employee) throw new NotFoundException('Usuário não encontrado.');
 
-    await this.cacheService.storeCache(`employee:${employee_id}`, employee);
+    await this.cacheService.storeCache(`employee:${employeeId}`, employee);
 
     return employee;
   }
 
-  async update(employee_id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    await this.findOne(employee_id);
+  async update(employeeId: string, dto: UpdateEmployeeDto) {
+    await this.findOne(employeeId);
 
-    const { address, ...employeeData } = updateEmployeeDto;
+    const { address, ...employeeData } = dto;
 
     const updatedEmployee = await this.prisma.employee.update({
-      where: { employee_id },
+      where: { employeeId },
       data: {
         ...employeeData,
         ...(address && {
@@ -114,14 +112,14 @@ export class EmployeesService {
       include: { address: true, user: true },
     });
 
-    await this.cacheService.clearCache(`employee:${employee_id}`);
+    await this.cacheService.clearCache(`employee:${employeeId}`);
 
     return updatedEmployee;
   }
 
-  async remove(employee_id: string) {
+  async remove(employeeId: string) {
     const employee = await this.prisma.employee.findFirst({
-      where: { employee_id },
+      where: { employeeId },
       include: { user: true, address: true },
     });
 
@@ -133,24 +131,24 @@ export class EmployeesService {
     const timestamp = Date.now();
 
     await this.prisma.employee.update({
-      where: { employee_id },
+      where: { employeeId },
       data: {
         deletedAt: new Date(),
         resignationDate: new Date(),
         firstName: `Funcionário`,
         lastName: `Anonimizado`,
-        cpfHash: `deleted-${employee_id}-${timestamp}`,
-        cpfEncrypted: `deleted-${employee_id}-${timestamp}`,
+        cpfHash: `deleted-${employeeId}-${timestamp}`,
+        cpfEncrypted: `deleted-${employeeId}-${timestamp}`,
         salary: 0.0,
         phone: `00000000000`,
 
         ...(employee.address && {
           address: {
             update: {
-              street: `deleted-${employee_id}-${timestamp}`,
+              street: `deleted-${employeeId}-${timestamp}`,
               number: '0',
-              complement: `deleted-${employee_id}-${timestamp}`,
-              district: `deleted-${employee_id}-${timestamp}`,
+              complement: `deleted-${employeeId}-${timestamp}`,
+              district: `deleted-${employeeId}-${timestamp}`,
               postalCode: '00000000',
             },
           },
@@ -159,7 +157,7 @@ export class EmployeesService {
         ...(employee.user && {
           user: {
             update: {
-              email: `deleted-${employee_id}-${timestamp}@auto-bots.anonymous`,
+              email: `deleted-${employeeId}-${timestamp}@auto-bots.anonymous`,
               isActive: false,
               passwordHash: `revoked_or_anonymized_at_${timestamp}`,
             },
@@ -170,7 +168,7 @@ export class EmployeesService {
 
     if (employee.userId) {
       await this.prisma.user.update({
-        where: { user_id: employee.userId },
+        where: { userId: employee.userId },
         data: {
           isActive: false,
         },
@@ -178,7 +176,7 @@ export class EmployeesService {
       await this.sessionService.deleteSession(employee.userId);
     }
 
-    await this.cacheService.clearCache(`employee:${employee_id}`);
+    await this.cacheService.clearCache(`employee:${employeeId}`);
 
     return {
       message: `Funcionário ${employee.firstName} ${employee.lastName} removido com sucesso.`,

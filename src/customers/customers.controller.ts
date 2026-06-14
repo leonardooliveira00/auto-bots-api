@@ -47,10 +47,8 @@ export class CustomersController {
     status: 400,
     description: 'Erro de validação nos campos informados.',
   })
-  async create(
-    @Body() createCustomerDto: CreateCustomerDto,
-  ): Promise<Customer> {
-    const customer = await this.customersService.create(createCustomerDto);
+  async create(@Body() dto: CreateCustomerDto): Promise<Customer> {
+    const customer = await this.customersService.create(dto);
     return new Customer(customer);
   }
 
@@ -125,12 +123,9 @@ export class CustomersController {
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateCustomerDto: UpdateCustomerDto,
+    @Body() dto: UpdateCustomerDto,
   ) {
-    const updatedCustomer = await this.customersService.update(
-      id,
-      updateCustomerDto,
-    );
+    const updatedCustomer = await this.customersService.update(id, dto);
     return new Customer(updatedCustomer);
   }
 

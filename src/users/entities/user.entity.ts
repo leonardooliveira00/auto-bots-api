@@ -1,7 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
 
 export class User {
-  @Expose() user_id!: string;
+  @Expose() userId!: string;
   @Expose() email!: string;
   @Expose() isActive!: boolean;
   @Expose() createdAt!: Date;

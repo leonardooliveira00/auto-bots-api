@@ -43,9 +43,9 @@ export class UsersController {
   @ApiParam({ name: 'id', format: 'uuid', description: 'ID do usuário' })
   async updatePassword(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Body() dto: UpdatePasswordDto,
   ) {
-    await this.usersService.updatePassword(id, updatePasswordDto.newPassword);
+    await this.usersService.updatePassword(id, dto.newPassword);
     return { message: 'Senha atualizada com sucesso.' };
   }
 
@@ -72,13 +72,13 @@ export class UsersController {
   async toggleStatus(
     @Param('id', ParseUUIDPipe) targetId: string,
     @Request() req,
-    @Body() toggleStatusDto: ToggleStatusDto,
+    @Body() dto: ToggleStatusDto,
   ): Promise<User> {
     const currentUserId = req.user.sub;
     const updatedUser = await this.usersService.toggleStatus(
       targetId,
       currentUserId,
-      toggleStatusDto.isActive,
+      dto.isActive,
     );
     return new User(updatedUser);
   }

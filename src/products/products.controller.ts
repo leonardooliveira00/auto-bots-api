@@ -42,8 +42,8 @@ export class ProductsController {
     description: 'Produto registrado e pronto para movimentação.',
     type: Product,
   })
-  async create(@Body() createProductDto: CreateProductDto) {
-    const product = await this.productsService.create(createProductDto);
+  async create(@Body() dto: CreateProductDto) {
+    const product = await this.productsService.create(dto);
     return new Product({
       ...product,
       price: Number(product.price),
@@ -113,9 +113,9 @@ export class ProductsController {
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() dto: UpdateProductDto,
   ) {
-    const product = await this.productsService.update(id, updateProductDto);
+    const product = await this.productsService.update(id, dto);
     return new Product({
       ...product,
       price: Number(product.price),

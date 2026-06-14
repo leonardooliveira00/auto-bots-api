@@ -5,7 +5,7 @@ import { maskCpfOrCnpj } from '../../utils/masks/mask.cpf.cnpj';
 import { dataDecryption } from '../../utils/encryption/data.encryption';
 
 export class Customer {
-  @Expose() customer_id!: string;
+  @Expose() customerId!: string;
   @Expose() name!: string;
   @Expose() lastName!: string;
   @Expose() email!: string;

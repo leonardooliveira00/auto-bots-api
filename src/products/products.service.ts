@@ -12,13 +12,13 @@ import { PrismaService } from '../../prisma.service';
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto): Promise<any> {
+  async create(dto: CreateProductDto): Promise<any> {
     const existingProduct = await this.prisma.product.findFirst({
-      where: { sku: createProductDto.sku },
+      where: { sku: dto.sku },
       include: { stock: true },
     });
 
-    const { stock, ...productData } = createProductDto;
+    const { stock, ...productData } = dto;
 
     if (stock.minStock > stock.maxStock)
       throw new BadRequestException(
@@ -32,14 +32,12 @@ export class ProductsService {
 
     if (existingProduct) {
       if (existingProduct.isActive) {
-        throw new ConflictException(
-          `Produto com o SKU ${createProductDto.sku} já existe.`,
-        );
+        throw new ConflictException(`Produto com o SKU ${dto.sku} já existe.`);
       }
 
       return await this.prisma.$transaction(async (tx) => {
         return tx.product.update({
-          where: { product_id: existingProduct.product_id },
+          where: { productId: existingProduct.productId },
           data: {
             ...productData,
             isActive: true,
@@ -81,28 +79,32 @@ export class ProductsService {
     });
   }
 
-  async findOne(id: string, includeActive = false) {
+  async findOne(productId: string, includeActive = false) {
     const product = await this.prisma.product.findFirst({
-      where: { product_id: id, isActive: includeActive ? undefined : true },
+      where: { productId, isActive: includeActive ? undefined : true },
       include: { stock: true },
     });
 
     if (!product)
-      throw new NotFoundException(`Produto ativo com ID ${id} não encontrado.`);
+      throw new NotFoundException(
+        `Produto ativo com ID ${productId} não encontrado.`,
+      );
 
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<any> {
+  async update(productId: string, dto: UpdateProductDto): Promise<any> {
     const product = await this.prisma.product.findUnique({
-      where: { product_id: id },
+      where: { productId },
       include: { stock: true },
     });
 
     if (!product || !product.isActive)
-      throw new NotFoundException(`Produto com ID ${id} não encontrado.`);
+      throw new NotFoundException(
+        `Produto com ID ${productId} não encontrado.`,
+      );
 
-    const { stock, ...productData } = updateProductDto;
+    const { stock, ...productData } = dto;
 
     if (stock) {
       const finalMinStock =
@@ -131,7 +133,7 @@ export class ProductsService {
     }
 
     return await this.prisma.product.update({
-      where: { product_id: id },
+      where: { productId },
       data: {
         ...productData,
         ...(stock && {
@@ -144,16 +146,18 @@ export class ProductsService {
     });
   }
 
-  async remove(id: string) {
+  async remove(productId: string) {
     const product = await this.prisma.product.findUnique({
-      where: { product_id: id },
+      where: { productId },
     });
 
     if (!product || !product.isActive)
-      throw new NotFoundException(`Produto com ID ${id} não encontrado.`);
+      throw new NotFoundException(
+        `Produto com ID ${productId} não encontrado.`,
+      );
 
     await this.prisma.product.update({
-      where: { product_id: id },
+      where: { productId: productId },
       data: { isActive: false },
     });
 

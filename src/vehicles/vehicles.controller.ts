@@ -42,8 +42,8 @@ export class VehiclesController {
     description: 'Veículo integrado e linkado com sucesso ao cliente.',
     type: Vehicle,
   })
-  async create(@Body() createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
-    const vehicle = await this.vehiclesService.create(createVehicleDto);
+  async create(@Body() dto: CreateVehicleDto): Promise<Vehicle> {
+    const vehicle = await this.vehiclesService.create(dto);
     return new Vehicle(vehicle);
   }
 
@@ -102,12 +102,9 @@ export class VehiclesController {
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateVehicleDto: UpdateVehicleDto,
+    @Body() dto: UpdateVehicleDto,
   ) {
-    const updatedVehicle = await this.vehiclesService.update(
-      id,
-      updateVehicleDto,
-    );
+    const updatedVehicle = await this.vehiclesService.update(id, dto);
     return new Vehicle(updatedVehicle);
   }
 

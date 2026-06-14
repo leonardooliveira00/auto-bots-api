@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { convertToBrDate } from '../../utils/converters/date.converter';
 
-export class CreateOrderServiceDto {
+export class CreateWorkOrderDto {
   @IsUUID('4', { message: 'O ID do veículo deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do veículo é obrigatório.' })
   vehicleId!: string;

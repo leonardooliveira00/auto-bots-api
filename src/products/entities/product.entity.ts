@@ -3,7 +3,7 @@ import { ValidateNested } from 'class-validator';
 import { Stock } from '../../stock/entities/stock.entity';
 
 export class Product {
-  @Expose() product_id!: string;
+  @Expose() productId!: string;
   @Expose() sku!: string;
   @Expose() name!: string;
   @Expose() description?: string | null;

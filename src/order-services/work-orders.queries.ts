@@ -1,7 +1,7 @@
 import { Prisma } from '../../generated/prisma/client';
 
 export const osListSelect = {
-  os_id: true,
+  workOrderId: true,
   protocol: true,
   status: true,
   totalAmount: true,
@@ -20,10 +20,10 @@ export const osListSelect = {
       role: true,
     },
   },
-} satisfies Prisma.OrderOfServiceSelect;
+} satisfies Prisma.WorkOrderSelect;
 
 export const osDetailSelect = {
-  os_id: true,
+  workOrderId: true,
   protocol: true,
   description: true,
   status: true,
@@ -41,4 +41,4 @@ export const osDetailSelect = {
     include: { product: true },
   },
   labors: true,
-} satisfies Prisma.OrderOfServiceSelect;
+} satisfies Prisma.WorkOrderSelect;

@@ -7,7 +7,7 @@ import {
   Min,
 } from 'class-validator';
 
-export class AddOsProductsDto {
+export class AddWorkOrderProductDto {
   @IsUUID('4', { message: 'O ID do produto deve ser um UUID válido.' })
   @IsNotEmpty({ message: 'O ID do produto é obrigatório.' })
   productId!: string;

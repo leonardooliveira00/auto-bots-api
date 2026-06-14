@@ -2,7 +2,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 import { maskPostalCode } from '../../utils/masks/mask.cep';
 
 export class Address {
-  @Expose() address_id!: string;
+  @Expose() addressId!: string;
   @Expose() street!: string;
   @Expose() number!: string;
   @Expose() district!: string;

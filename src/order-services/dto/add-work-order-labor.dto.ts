@@ -7,7 +7,7 @@ import {
   Min,
 } from 'class-validator';
 
-export class AddOsLaborDto {
+export class AddWorkOrderLaborDto {
   @IsString({ message: 'A descrição deve ser um texto.' })
   @MaxLength(255, {
     message: 'A descrição do serviço pode ter no máximo 255 caracteres.',

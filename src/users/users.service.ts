@@ -11,7 +11,6 @@ import { generatePasswordHash } from '../utils/encryption/hash.password';
 import { SessionService } from '../sessions/session.service';
 
 import argon2 from 'argon2';
-import e from 'express';
 
 @Injectable()
 export class UsersService {
@@ -31,18 +30,18 @@ export class UsersService {
     return user;
   }
 
-  async findOne(user_id: string) {
+  async findOne(userId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { user_id },
+      where: { userId },
     });
     if (!user) throw new NotFoundException('Usuário não encontrado.');
 
     return user;
   }
 
-  async findWithProfile(user_id: string) {
+  async findWithProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { user_id },
+      where: { userId },
       include: { employee: true },
     });
 
@@ -51,8 +50,8 @@ export class UsersService {
     return user;
   }
 
-  async updatePassword(user_id: string, newPassword: string) {
-    const user = await this.findOne(user_id);
+  async updatePassword(userId: string, newPassword: string) {
+    const user = await this.findOne(userId);
 
     const matchPassword = await argon2.verify(user.passwordHash, newPassword);
 
@@ -64,7 +63,7 @@ export class UsersService {
     const newPasswordHash = await generatePasswordHash(newPassword);
 
     return await this.prisma.user.update({
-      where: { user_id },
+      where: { userId },
       data: {
         passwordHash: newPasswordHash,
       },
@@ -77,7 +76,7 @@ export class UsersService {
     isActive: boolean,
   ) {
     const employee = await this.prisma.employee.findUnique({
-      where: { employee_id: targetEmployeeId },
+      where: { employeeId: targetEmployeeId },
       select: { userId: true },
     });
 
@@ -98,7 +97,7 @@ export class UsersService {
     }
 
     const updatedUser = await this.prisma.user.update({
-      where: { user_id: employee.userId },
+      where: { userId: employee.userId },
       data: { isActive },
     });
 

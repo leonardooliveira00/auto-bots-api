@@ -10,7 +10,7 @@ import { User } from '../../users/entities/user.entity';
 
 export class Employee {
   // Campos públicos
-  @Expose() employee_id!: string;
+  @Expose() employeeId!: string;
   @Expose() firstName!: string;
   @Expose() lastName!: string;
   @Expose() email!: string;

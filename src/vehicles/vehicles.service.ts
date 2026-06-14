@@ -12,11 +12,11 @@ import { Vehicle } from './entities/vehicle.entity';
 export class VehiclesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
-    const { customerId, plate, vin, ...vehicleData } = createVehicleDto;
+  async create(dto: CreateVehicleDto): Promise<Vehicle> {
+    const { customerId, plate, vin, ...vehicleData } = dto;
 
     const customer = await this.prisma.customer.findUnique({
-      where: { customer_id: customerId },
+      where: { customerId },
     });
 
     if (!customer || !customer.isActive)
@@ -61,12 +61,12 @@ export class VehiclesService {
   }
 
   async findOne(
-    vehicle_id: string,
+    vehicleId: string,
     status?: 'active' | 'inactive' | 'all',
   ): Promise<Vehicle> {
     const vehicle = await this.prisma.vehicle.findFirst({
       where: {
-        vehicle_id,
+        vehicleId,
         isActive:
           status === 'all' ? undefined : status === 'inactive' ? false : true,
       },
@@ -81,8 +81,8 @@ export class VehiclesService {
     return vehicle;
   }
 
-  async update(vehicle_id: string, updateVehicleDto: UpdateVehicleDto) {
-    const vehicle = await this.findOne(vehicle_id);
+  async update(vehicleId: string, dto: UpdateVehicleDto) {
+    const vehicle = await this.findOne(vehicleId);
 
     if (!vehicle || !vehicle.isActive)
       throw new NotFoundException(
@@ -90,20 +90,20 @@ export class VehiclesService {
       );
 
     const updatedVehicle = await this.prisma.vehicle.update({
-      where: { vehicle_id },
-      data: updateVehicleDto,
+      where: { vehicleId },
+      data: dto,
     });
 
     return updatedVehicle;
   }
 
-  async remove(vehicle_id: string) {
-    const vehicle = await this.findOne(vehicle_id);
+  async remove(vehicleId: string) {
+    const vehicle = await this.findOne(vehicleId);
 
-    const suffix = `del-${vehicle_id.substring(0, 8)}`;
+    const suffix = `del-${vehicleId.substring(0, 8)}`;
 
     await this.prisma.vehicle.update({
-      where: { vehicle_id },
+      where: { vehicleId },
       data: {
         isActive: false,
         deletedAt: new Date(),

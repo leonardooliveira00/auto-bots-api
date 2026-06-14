@@ -34,9 +34,9 @@ export class AuthService {
     user: any,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const payload = {
-      sub: user.user_id,
+      sub: user.userId,
       email: user.email,
-      employeeId: user.employee?.employee_id || null,
+      employeeId: user.employee?.employeeId || null,
       role: user.employee?.role || null,
       firstName: user.employee?.firstName || null,
       lastName: user.employee?.lastName || null,
@@ -46,13 +46,13 @@ export class AuthService {
       expiresIn: '15m',
     });
     const refreshToken = await this.jwtService.signAsync(
-      { sub: user.user_id },
+      { sub: user.userId },
       { expiresIn: '7d' },
     );
 
     const refreshTokenHash = generateTokenHash(refreshToken);
 
-    await this.sessionService.saveSession(user.user_id, refreshTokenHash);
+    await this.sessionService.saveSession(user.userId, refreshTokenHash);
 
     return {
       access_token: accessToken,
@@ -78,18 +78,18 @@ export class AuthService {
     const user = await this.usersService.findWithProfile(userId);
 
     const newRefreshToken = await this.jwtService.signAsync(
-      { sub: user.user_id },
+      { sub: user.userId },
       { expiresIn: '7d' },
     );
 
     const newRefreshTokenHash = generateTokenHash(newRefreshToken);
 
-    await this.sessionService.saveSession(user.user_id, newRefreshTokenHash);
+    await this.sessionService.saveSession(user.userId, newRefreshTokenHash);
 
     const payload = {
-      sub: user.user_id,
+      sub: user.userId,
       email: user.email,
-      employeeId: user.employee?.employee_id || null,
+      employeeId: user.employee?.employeeId || null,
       role: user.employee?.role || null,
       firstName: user.employee?.firstName || null,
       lastName: user.employee?.lastName || null,

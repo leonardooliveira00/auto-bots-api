@@ -31,8 +31,8 @@ export class StockService {
       );
 
     const employee = await (externalTx || this.prisma).employee.findUnique({
-      where: { employee_id: employeeId },
-      select: { employee_id: true },
+      where: { employeeId },
+      select: { employeeId: true },
     });
 
     if (!employee) {
@@ -80,13 +80,13 @@ export class StockService {
           quantity,
           type,
           reason,
-          employeeId: employee.employee_id,
+          employeeId: employee.employeeId,
         },
       });
 
       return {
         message: `Movimentação de ${type === MovementType.IN ? 'entrada' : 'saída'} registrada com sucesso.`,
-        movement_id: movement.movement_id,
+        movementId: movement.movementId,
         productId: movement.productId,
         employeeId: movement.employeeId,
         type: movement.type,
@@ -128,9 +128,9 @@ export class StockService {
     };
   }
 
-  async findOneInventory(id: string) {
+  async findOneInventory(stockId: string) {
     const stockItem = await this.prisma.stock.findUnique({
-      where: { stock_id: id },
+      where: { stockId },
       include: { product: true },
     });
 

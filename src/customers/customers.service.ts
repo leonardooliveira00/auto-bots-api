@@ -13,8 +13,8 @@ import { dataEncryption } from '../utils/encryption/data.encryption';
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createCustomerDto: CreateCustomerDto) {
-    const { cpfOrCnpj, ...customerData } = createCustomerDto;
+  async create(dto: CreateCustomerDto) {
+    const { cpfOrCnpj, ...customerData } = dto;
 
     const cpfOrCnpjHash = generateHash(cpfOrCnpj);
 
@@ -47,10 +47,10 @@ export class CustomersService {
     });
   }
 
-  async findOne(customer_id: string, status?: 'active' | 'inactive' | 'all') {
+  async findOne(customerId: string, status?: 'active' | 'inactive' | 'all') {
     const customer = await this.prisma.customer.findFirst({
       where: {
-        customer_id,
+        customerId,
         isActive:
           status === 'all' ? undefined : status === 'inactive' ? false : true,
       },
@@ -65,22 +65,22 @@ export class CustomersService {
     return customer;
   }
 
-  async update(customer_id: string, updateCustomerDto: UpdateCustomerDto) {
-    await this.findOne(customer_id);
+  async update(customerId: string, updateCustomerDto: UpdateCustomerDto) {
+    await this.findOne(customerId);
 
     return await this.prisma.customer.update({
-      where: { customer_id },
+      where: { customerId },
       data: updateCustomerDto,
     });
   }
 
-  async remove(customer_id: string) {
-    const costumer = await this.findOne(customer_id);
+  async remove(customerId: string) {
+    const costumer = await this.findOne(customerId);
 
-    const anonSuffix = `anon-${customer_id.substring(0, 8)}`;
+    const anonSuffix = `anon-${customerId.substring(0, 8)}`;
 
     await this.prisma.customer.update({
-      where: { customer_id },
+      where: { customerId },
       data: {
         isActive: false,
         deletedAt: new Date(),

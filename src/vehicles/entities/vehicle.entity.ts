@@ -2,7 +2,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 import { Customer } from '../../customers/entities/customer.entity';
 
 export class Vehicle {
-  @Expose() vehicle_id!: string;
+  @Expose() vehicleId!: string;
   @Expose() brand!: string;
   @Expose() model!: string;
   @Expose() year!: number;

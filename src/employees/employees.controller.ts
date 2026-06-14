@@ -40,10 +40,8 @@ export class EmployeesController {
     description: 'Funcionário cadastrado com sucesso.',
     type: Employee,
   })
-  async create(
-    @Body() createEmployeeDto: CreateEmployeeDto,
-  ): Promise<Employee> {
-    const employee = await this.employeesService.create(createEmployeeDto);
+  async create(@Body() dto: CreateEmployeeDto): Promise<Employee> {
+    const employee = await this.employeesService.create(dto);
     return new Employee(employee);
   }
 
@@ -114,9 +112,9 @@ export class EmployeesController {
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateEmployeeDto: UpdateEmployeeDto,
+    @Body() dto: UpdateEmployeeDto,
   ) {
-    const employee = await this.employeesService.update(id, updateEmployeeDto);
+    const employee = await this.employeesService.update(id, dto);
     return new Employee(employee);
   }
 
