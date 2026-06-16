@@ -13,10 +13,13 @@ import {
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { AddWorkOrderLaborDto } from './dto/add-work-order-labor.dto';
-import { AddWorkOrderProductDto } from './dto/add-work-order-product';
+import { AddWorkOrderProductDto } from './dto/add-work-order-product.dto';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
 import { UseAuth } from '../auth/auth.decorator';
+import { WorkOrderList } from './entities/work-order-list.entity';
+import { WorkOrderDetail } from './entities/work-order-detail.entity';
 
+@SerializeOptions({ strategy: 'excludeAll' })
 @UseAuth()
 @Controller('work-orders')
 export class WorkOrdersController {
@@ -24,7 +27,8 @@ export class WorkOrdersController {
 
   @Post()
   async create(@Body() dto: CreateWorkOrderDto) {
-    return this.workOrderService.create(dto);
+    const workOrder = await this.workOrderService.create(dto);
+    return new WorkOrderDetail(workOrder);
   }
 
   @Post(':id/labors')
@@ -32,7 +36,8 @@ export class WorkOrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddWorkOrderLaborDto,
   ) {
-    return this.workOrderService.addLabor(id, dto);
+    const updatedWorkOrder = await this.workOrderService.addLabor(id, dto);
+    return new WorkOrderDetail(updatedWorkOrder);
   }
 
   @Post(':id/products')
@@ -40,17 +45,20 @@ export class WorkOrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddWorkOrderProductDto,
   ) {
-    return this.workOrderService.addProduct(id, dto);
+    const updatedWorkOrder = await this.workOrderService.addProduct(id, dto);
+    return new WorkOrderDetail(updatedWorkOrder);
   }
 
   @Get()
   async findAll(@Query('status') status?: string) {
-    return this.workOrderService.findAll(status);
+    const workOrders = await this.workOrderService.findAll(status);
+    return workOrders.map((workOrder) => new WorkOrderList(workOrder));
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.workOrderService.findOne(id);
+    const workOrder = await this.workOrderService.findOne(id);
+    return new WorkOrderDetail(workOrder);
   }
 
   @Patch(':id/status')
@@ -58,22 +66,31 @@ export class WorkOrdersController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateWorkOrderStatusDto,
   ) {
-    return this.workOrderService.updateStatus(id, dto);
+    const updatedWorkOrder = await this.workOrderService.updateStatus(id, dto);
+    return new WorkOrderDetail(updatedWorkOrder);
   }
 
   @Delete(':id/labors/:laborId')
-  removeLabor(
+  async removeLabor(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('laborId', ParseUUIDPipe) laborId: string,
   ) {
-    return this.workOrderService.removeLabor(id, laborId);
+    const updatedWorkOrder = await this.workOrderService.removeLabor(
+      id,
+      laborId,
+    );
+    return new WorkOrderDetail(updatedWorkOrder);
   }
 
   @Delete(':id/products/:productId')
-  removeProduct(
+  async removeProduct(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('productId', ParseUUIDPipe) productId: string,
   ) {
-    return this.workOrderService.removeProduct(id, productId);
+    const updatedWorkOrder = await this.workOrderService.removeProduct(
+      id,
+      productId,
+    );
+    return new WorkOrderDetail(updatedWorkOrder);
   }
 }

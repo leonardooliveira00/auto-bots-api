@@ -34,11 +34,41 @@ export const osDetailSelect = {
   createdAt: true,
   updatedAt: true,
   vehicle: {
-    include: { customer: true },
+    select: {
+      vehicleId: true,
+      brand: true,
+      model: true,
+      year: true,
+      plate: true,
+      vin: true,
+      customer: {
+        select: { name: true, lastName: true, phone: true },
+      },
+    },
   },
-  employee: true,
+  employee: {
+    select: {
+      employeeId: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    },
+  },
   products: {
-    include: { product: true },
+    select: {
+      productId: true,
+      workOrderProductId: true,
+      quantity: true,
+      unitPrice: true,
+      totalPrice: true,
+    },
   },
-  labors: true,
+  labors: {
+    select: {
+      workOrderLaborId: true,
+      description: true,
+      hours: true,
+      hourlyRate: true,
+    },
+  },
 } satisfies Prisma.WorkOrderSelect;

@@ -11,7 +11,7 @@ import {
   WorkOrderStatus,
   Prisma,
 } from '../../generated/prisma/client';
-import { AddWorkOrderProductDto } from './dto/add-work-order-product';
+import { AddWorkOrderProductDto } from './dto/add-work-order-product.dto';
 import { osDetailSelect, osListSelect } from './work-orders.queries';
 import { UpdateWorkOrderStatusDto } from './dto/update-work-order-status.dto';
 import { StockService } from '../stock/stock.service';
@@ -324,8 +324,10 @@ export class WorkOrdersService {
     });
   }
 
-  async findOne(workOrderId: string) {
-    const workOrder = await this.prisma.workOrder.findUnique({
+  async findOne(workOrderId: string, tx?: Prisma.TransactionClient) {
+    const client = tx || this.prisma;
+
+    const workOrder = await client.workOrder.findUnique({
       where: { workOrderId },
       select: osDetailSelect,
     });
@@ -441,7 +443,7 @@ export class WorkOrdersService {
         where: { workOrderId },
         data: { status: newStatus },
       });
-      return this.findOne(workOrderId);
+      return this.findOne(workOrderId, tx);
     });
   }
 }

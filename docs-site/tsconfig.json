@@ -1,0 +1,24 @@
+// This file is not used by "docusaurus start/build" commands.
+// It is here to improve your IDE experience (type-checking, autocompletion...),
+// and can also run the package.json "typecheck" script manually.
+{
+  "extends": "@docusaurus/tsconfig",
+  "compilerOptions": {
+    "target": "es2025",
+    "lib": ["DOM", "DOM.Iterable", "ES2025"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "paths": {
+      "@site/*": ["*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": [".docusaurus", "build"]
+}

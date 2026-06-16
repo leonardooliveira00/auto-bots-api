@@ -3,6 +3,7 @@ import { Vehicle } from '../../vehicles/entities/vehicle.entity';
 import { maskPhone } from '../../utils/masks/mask.phone';
 import { maskCpfOrCnpj } from '../../utils/masks/mask.cpf.cnpj';
 import { dataDecryption } from '../../utils/encryption/data.encryption';
+import { TransformPhone } from '../../common/transformers/phone-transformer';
 
 export class Customer {
   @Expose() customerId!: string;
@@ -11,7 +12,7 @@ export class Customer {
   @Expose() email!: string;
 
   @Expose()
-  @Transform(({ value }) => (value ? maskPhone(value) : ''))
+  @TransformPhone()
   phone!: string;
 
   @Expose() isActive!: boolean;

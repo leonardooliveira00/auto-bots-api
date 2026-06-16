@@ -1,7 +1,9 @@
 export const maskPhone = (phone: string): string => {
-  const clearPhone = phone.replace(/\D/g, '');
+  if (!phone) return '';
 
-  if (clearPhone.length !== 11) return phone;
+  const cleanPhone = phone.replace(/\D/g, '');
 
-  return clearPhone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  if (cleanPhone.length !== 11) return phone;
+
+  return cleanPhone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
 };
